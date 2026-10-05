@@ -1,0 +1,30 @@
+# gitlab-runner chart values. Jobs run as pods in the runner's own namespace.
+gitlabUrl: https://gitlab.com/
+
+# The cluster has 4 vCPU in total: 2 jobs at a time, 1 vCPU max each.
+concurrent: 2
+
+# Lets the runner create job pods, secrets and configmaps in its namespace.
+rbac:
+  create: true
+
+# Prometheus-format metrics for the SLOs, scraped by vmagent once VictoriaMetrics is deployed.
+metrics:
+  enabled: true
+service:
+  enabled: true
+
+runners:
+  # Holds runner-token, created by 'make runner-secret' from .env: never stored in Git.
+  secret: gitlab-runner-token
+  config: |
+    [[runners]]
+      [runners.kubernetes]
+        namespace = "{{.Release.Namespace}}"
+        image = "alpine:3.22"
+        cpu_request = "250m"
+        cpu_limit = "1"
+        memory_request = "256Mi"
+        memory_limit = "1Gi"
+        helper_cpu_request = "50m"
+        helper_memory_request = "64Mi"
