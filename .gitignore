@@ -1,0 +1,49 @@
+# Secrets and environment
+.env
+.env.*
+*.env
+!.env.example
+secrets/
+*.key
+*.pem
+*.pfx
+*.p12
+credentials-velero
+
+# Terraform (.terraform.lock.hcl must stay versioned)
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+*.tfplan
+tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+.kube/
+
+# Helm (dependencies pulled by helm dependency build)
+**/charts/*.tgz
+
+# Ansible
+*.retry
+.vault_pass*
+
+# IDE and OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
