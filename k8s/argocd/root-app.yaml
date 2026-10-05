@@ -1,0 +1,18 @@
+# argocd-apps chart values: the root application deploys every Application found in k8s/apps.
+applications:
+  root:
+    namespace: argocd
+    project: default
+    finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    source:
+      repoURL: https://gitlab.com/WhiteMuush/gitlab-runner-on-azure.git
+      targetRevision: main
+      path: k8s/apps
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: argocd
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
