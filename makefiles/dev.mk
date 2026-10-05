@@ -6,5 +6,5 @@ help: ## List the targets
 lint: ## terraform fmt/validate, tflint, shellcheck
 	@scripts/lint.sh
 
-.PHONY: help lint bootstrap bootstrap-ci bootstrap-access grant-aks ci-vars \
+.PHONY: help lint bootstrap bootstrap-access grant-aks \
 	plan up destroy start stop kubeconfig argocd-ui runner-secret

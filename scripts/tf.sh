@@ -35,17 +35,13 @@ check_cluster() {
 # GitLab-managed state over the http backend. Credentials go through TF_HTTP_* variables
 # so they are never persisted in .terraform/.
 set_backend_env() {
-    local address="${CI_API_V4_URL:-https://gitlab.com/api/v4}/projects/${GITLAB_PROJECT_ID}/terraform/state/${STACK}"
+    local address="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${STACK}"
     export TF_HTTP_ADDRESS="${address}"
     export TF_HTTP_LOCK_ADDRESS="${address}/lock" TF_HTTP_LOCK_METHOD=POST
     export TF_HTTP_UNLOCK_ADDRESS="${address}/lock" TF_HTTP_UNLOCK_METHOD=DELETE
     export TF_HTTP_RETRY_WAIT_MIN=5
-    if [[ -n "${CI_JOB_TOKEN:-}" ]]; then
-        export TF_HTTP_USERNAME=gitlab-ci-token TF_HTTP_PASSWORD="${CI_JOB_TOKEN}"
-    else
-        require_env GITLAB_USER GITLAB_TOKEN
-        export TF_HTTP_USERNAME="${GITLAB_USER}" TF_HTTP_PASSWORD="${GITLAB_TOKEN}"
-    fi
+    require_env GITLAB_USER GITLAB_TOKEN
+    export TF_HTTP_USERNAME="${GITLAB_USER}" TF_HTTP_PASSWORD="${GITLAB_TOKEN}"
 }
 
 tf_init() {

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Grants the Azure roles: cluster admin for people, deploy rights for the CI.
+# Grants the Azure roles that give people admin access to the cluster.
 # Roles sit on the resource group, so they survive a cluster destroy/recreate. Idempotent.
-# bootstrap-access.sh               everything: admins from CLUSTER_ADMINS, CI
+# bootstrap-access.sh               every admin listed in CLUSTER_ADMINS
 # bootstrap-access.sh --user <upn>  cluster access for one person only
 set -euo pipefail
 # shellcheck source=scripts/lib.sh
@@ -38,14 +38,6 @@ grant_people() {
     done
 }
 
-grant_ci() {
-    task "access : CI identity"
-    local id
-    id=$(azs identity show -g "${AZ_RESOURCE_GROUP}" -n "${CI_IDENTITY}" --query principalId -o tsv)
-    ensure_role "${id}" ServicePrincipal "Contributor" "${RG_SCOPE}" "${CI_IDENTITY}"
-    ensure_role "${id}" ServicePrincipal "${ROLE_AKS_ADMIN}" "${RG_SCOPE}" "${CI_IDENTITY}"
-}
-
 main() {
     log_init "bootstrap-access $*"
     recap_keys ok changed
@@ -56,9 +48,8 @@ main() {
         CLUSTER_ADMINS=$2
         grant_people
     else
-        require_env CI_IDENTITY CLUSTER_ADMINS
+        require_env CLUSTER_ADMINS
         grant_people
-        grant_ci
     fi
     recap access
 }
