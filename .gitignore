@@ -10,8 +10,12 @@ secrets/
 *.p12
 credentials-velero
 
+# Script logs
+.logs/
+
 # Terraform (.terraform.lock.hcl must stay versioned)
 **/.terraform/*
+**/.terraform-lint/
 *.tfstate
 *.tfstate.*
 .terraform.tfstate.lock.info

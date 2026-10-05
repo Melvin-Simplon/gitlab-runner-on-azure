@@ -1,0 +1,21 @@
+# argo-cd chart values. UI reached through port-forward until the ingress lands (phase 2).
+dex:
+  enabled: false
+
+configs:
+  params:
+    server.insecure: false
+
+# Metrics exposed now, scraped once the Prometheus agents exist (phase 3).
+controller:
+  metrics:
+    enabled: true
+server:
+  metrics:
+    enabled: true
+repoServer:
+  metrics:
+    enabled: true
+applicationSet:
+  metrics:
+    enabled: true
