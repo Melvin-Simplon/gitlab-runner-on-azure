@@ -79,6 +79,13 @@ require_cmd() {
     done
 }
 
+require_context() {
+    local context
+    context=$(kubectl config current-context 2>/dev/null || true)
+    [[ "${context}" == "${CLUSTER_NAME}" ]] \
+        || die "kubectl points to '${context}', not ${CLUSTER_NAME}: run 'make kubeconfig'"
+}
+
 # confirm <question>: yes without asking when CONFIRM=yes or stdin is not a terminal (CI).
 confirm() {
     [[ "${CONFIRM:-}" == "yes" || ! -t 0 ]] && return 0

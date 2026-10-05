@@ -8,13 +8,6 @@ require_env CLUSTER_NAME
 require_cmd kubectl
 readonly PORT="${ARGOCD_PORT:-8080}"
 
-check_context() {
-    local context
-    context=$(kubectl config current-context 2>/dev/null || true)
-    [[ "${context}" == "${CLUSTER_NAME}" ]] \
-        || die "kubectl points to '${context}', not ${CLUSTER_NAME}: run 'make kubeconfig'"
-}
-
 print_password() {
     local password
     password=$(kubectl -n argocd get secret argocd-initial-admin-secret \
@@ -27,7 +20,7 @@ print_password() {
 
 main() {
     log_init "argocd-ui"
-    check_context
+    require_context
     print_password
     kubectl -n argocd port-forward svc/argocd-server "${PORT}:443"
 }
