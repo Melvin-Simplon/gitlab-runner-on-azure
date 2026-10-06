@@ -1,0 +1,67 @@
+# victoria-metrics-agent chart values: one vmagent per node (DaemonSet) for every component except the runners.
+# The runners keep their own vmagent sidecar (k8s/gitlab-runner/vmagent-sidecar.yaml).
+# Pull: each agent reads the pods of its own node. Push: remote write to vminsert.
+
+mode: daemonSet
+
+remoteWrite:
+  - url: http://vm-victoria-metrics-cluster-vminsert.monitoring.svc.cluster.local:8480/insert/0/prometheus/api/v1/write
+
+# Name of the node this agent runs on, used below to read only the pods of that node.
+env:
+  - name: NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+
+# The agents read themselves too, like any other pod.
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8429"
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
+config:
+  global:
+    scrape_interval: 15s
+  scrape_configs:
+    - job_name: pods
+      kubernetes_sd_configs:
+        - role: pod
+          # Only the pods of this agent's node: adding a node adds an agent, the load stays spread.
+          selectors:
+            - role: pod
+              field: spec.nodeName=%{NODE_NAME}
+      relabel_configs:
+        # The runners already have their sidecar: do not read them twice.
+        - source_labels: [__meta_kubernetes_namespace]
+          regex: gitlab-runner
+          action: drop
+        # Keep only the pods that ask to be read.
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          regex: "true"
+          action: keep
+        # Read the port given by the prometheus.io/port annotation.
+        - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+          regex: ([^:]+)(?::\d+)?;(\d+)
+          replacement: $1:$2
+          target_label: __address__
+        # Read another path than /metrics when prometheus.io/path says so.
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+          regex: (.+)
+          target_label: __metrics_path__
+        # Labels to tell the series apart in Grafana.
+        - source_labels: [__meta_kubernetes_namespace]
+          target_label: namespace
+        - source_labels: [__meta_kubernetes_pod_name]
+          target_label: pod
+        - source_labels: [__meta_kubernetes_pod_node_name]
+          target_label: node
+        - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+          regex: (.+)
+          target_label: job
