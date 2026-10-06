@@ -16,6 +16,7 @@ spec:
         releaseName: gitlab-runner
         valueFiles:
           - $values/k8s/gitlab-runner/values.yaml
+          - $values/k8s/gitlab-runner/vmagent-sidecar.yaml
     - repoURL: https://gitlab.com/WhiteMuush/gitlab-runner-on-azure.git
       targetRevision: main
       ref: values

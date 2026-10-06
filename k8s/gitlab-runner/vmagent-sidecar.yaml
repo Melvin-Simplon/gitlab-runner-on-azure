@@ -1,0 +1,58 @@
+# vmagent sidecar for the gitlab-runner chart, kept apart from the runner settings.
+# Loaded after values.yaml by k8s/apps/gitlab-runner.yaml.
+
+# Every runner pod ships its own metrics.
+# Pull: reads the runner on localhost:<metrics.port>. Push: remote write to vminsert.
+extraContainers:
+  - name: vmagent
+    image: victoriametrics/vmagent:v1.153.0
+    args:
+      - -promscrape.config=/etc/vmagent/scrape.yml
+      - -remoteWrite.url=http://vm-victoria-metrics-cluster-vminsert.monitoring.svc.cluster.local:8480/insert/0/prometheus/api/v1/write
+      # Buffer on disk while VictoriaMetrics is unreachable.
+      - -remoteWrite.tmpDataPath=/vmagent-data
+      # Every sidecar scrapes "localhost": these labels tell the runners apart.
+      - -remoteWrite.label=pod=$(POD_NAME)
+      - -remoteWrite.label=namespace=$(POD_NAMESPACE)
+    env:
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+    volumeMounts:
+      - name: vmagent-config
+        mountPath: /etc/vmagent
+      - name: vmagent-data
+        mountPath: /vmagent-data
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 128Mi
+
+volumes:
+  - name: vmagent-config
+    configMap:
+      name: gitlab-runner-vmagent
+  - name: vmagent-data
+    emptyDir: {}
+
+# extraObjects is rendered by Helm, so metrics.port from values.yaml is reused in scrape.yml.
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: gitlab-runner-vmagent
+    data:
+      scrape.yml: |
+        global:
+          scrape_interval: 15s
+        scrape_configs:
+          - job_name: gitlab-runner
+            static_configs:
+              - targets: ["localhost:{{ .Values.metrics.port }}"]
