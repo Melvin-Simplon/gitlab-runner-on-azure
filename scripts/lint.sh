@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Static checks, run by hand. Does not stop at the first problem: everything is reported in one pass.
+# Runs every static check and reports all problems at once.
 set -euo pipefail
 # shellcheck source=scripts/lib.sh
 source "$(dirname "$0")/lib.sh"
@@ -19,7 +19,7 @@ check_validate() {
     task "terraform : validate"
     local dir
     for dir in terraform/*/; do
-        # Own data dir: never touches the backend binding of the real .terraform/ working copy.
+        # Separate data dir, so the real .terraform/ is never touched.
         if TF_DATA_DIR="${PWD}/${dir}.terraform-lint" terraform -chdir="${dir}" init -backend=false -input=false >>"${LOG_FILE}" 2>&1 \
             && TF_DATA_DIR="${PWD}/${dir}.terraform-lint" terraform -chdir="${dir}" validate -no-color >&2; then
             ok "${dir}" "valid"

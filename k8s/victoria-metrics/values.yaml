@@ -1,7 +1,4 @@
-# victoria-metrics-cluster chart values.
-# Write path: agents -> vminsert -> vmstorage. Read path: Grafana -> vmselect -> vmstorage.
-# Nothing here pulls metrics: vminsert only receives what agents push (remote write).
-# Each component also exposes its own metrics, read by the vmagent DaemonSet (podAnnotations).
+# VictoriaMetrics only receives the metrics that agents push, it never pulls them.
 
 vminsert:
   podAnnotations:

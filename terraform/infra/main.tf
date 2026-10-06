@@ -23,14 +23,14 @@ resource "azurerm_kubernetes_cluster" "this" {
   oidc_issuer_enabled       = true
   workload_identity_enabled = true
 
-  # Entra ID only: no shared admin kubeconfig.
+  # Users log in with Entra ID, there is no shared admin kubeconfig.
   local_account_disabled = true
   azure_active_directory_role_based_access_control {
     tenant_id          = data.azurerm_client_config.current.tenant_id
     azure_rbac_enabled = true
   }
 
-  # No automatic upgrades: a surge node would eat into the shared DSv3 vCPU quota.
+  # No automatic upgrades, an extra node would use the shared vCPU quota.
   automatic_upgrade_channel = null
   node_os_upgrade_channel   = "None"
 
@@ -40,7 +40,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     node_count = var.node_count
   }
 
-  # Manual: nodes come from default_node_pool only, no Node Auto Provisioning (Karpenter).
+  # Nodes only come from default_node_pool.
   node_provisioning_profile {
     mode = "Manual"
   }

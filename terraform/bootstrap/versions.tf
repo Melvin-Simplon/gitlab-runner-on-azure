@@ -31,7 +31,7 @@ provider "helm" {
   kubernetes = {
     host                   = data.azurerm_kubernetes_cluster.this.kube_config[0].host
     cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.this.kube_config[0].cluster_ca_certificate)
-    # Reuses the az CLI session, locally (user) and in CI (federated identity).
+    # Reuses your az CLI session.
     exec = {
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "kubelogin"

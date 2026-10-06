@@ -1,4 +1,4 @@
-# argocd-apps chart values: the root application deploys every Application found in k8s/apps.
+# Root application: it deploys every Application found in k8s/apps.
 applications:
   root:
     namespace: argocd

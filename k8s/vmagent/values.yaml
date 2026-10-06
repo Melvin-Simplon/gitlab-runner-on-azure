@@ -1,6 +1,4 @@
-# victoria-metrics-agent chart values: one vmagent per node (DaemonSet) for every component except the runners.
-# The runners keep their own vmagent sidecar (k8s/gitlab-runner/vmagent-sidecar.yaml).
-# Pull: each agent reads the pods of its own node. Push: remote write to vminsert.
+# One vmagent per node reads every component except the runners.
 
 mode: daemonSet
 
@@ -33,12 +31,12 @@ config:
     - job_name: pods
       kubernetes_sd_configs:
         - role: pod
-          # Only the pods of this agent's node: adding a node adds an agent, the load stays spread.
+          # Only read the pods of this agent's node.
           selectors:
             - role: pod
               field: spec.nodeName=%{NODE_NAME}
       relabel_configs:
-        # The runners already have their sidecar: do not read them twice.
+        # Skip the runners, their sidecar already reads them.
         - source_labels: [__meta_kubernetes_namespace]
           regex: gitlab-runner
           action: drop

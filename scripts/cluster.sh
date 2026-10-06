@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Day-to-day cluster operations: cluster.sh <start|stop|kubeconfig>
+# Starts, stops or connects kubectl to the cluster.
 set -euo pipefail
 # shellcheck source=scripts/lib.sh
 source "$(dirname "$0")/lib.sh"

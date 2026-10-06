@@ -1,4 +1,4 @@
-# argo-cd chart values. UI reached through port-forward until the ingress lands (phase 2).
+# argo-cd chart values, the UI opens with make argocd-ui.
 dex:
   enabled: false
 
@@ -10,7 +10,7 @@ configs:
     timeout.reconciliation: 30s
     timeout.reconciliation.jitter: 0s
 
-# Metrics read by the vmagent DaemonSet: each pod says "read me" on its own metrics port.
+# Each pod gives its metrics port to the vmagent DaemonSet.
 controller:
   metrics:
     enabled: true

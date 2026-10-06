@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# Grafana admin credentials: grafana-secret.sh <create|show>
-# create: generates a random password once, then never touches it again. Idempotent.
-# Kept out of the chart: ArgoCD renders the chart every 30s and the chart would draw a new password each time.
+# Creates the Grafana admin password once, or shows it.
 set -euo pipefail
 # shellcheck source=scripts/lib.sh
 source "$(dirname "$0")/lib.sh"
