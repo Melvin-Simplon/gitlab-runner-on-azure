@@ -25,4 +25,5 @@ include makefiles/setup.mk
 include makefiles/infra.mk
 include makefiles/cluster.mk
 include makefiles/runner.mk
+include makefiles/grafana.mk
 include makefiles/dev.mk

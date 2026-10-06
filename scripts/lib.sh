@@ -86,6 +86,24 @@ require_context() {
         || die "kubectl points to '${context}', not ${CLUSTER_NAME}: run 'make kubeconfig'"
 }
 
+# apply_manifest <label> <manifest>: kubectl apply prints "unchanged" when nothing differs,
+# that is the idempotence signal. Called directly, never behind a pipe, so the counters survive.
+apply_manifest() {
+    local label=$1 manifest=$2 out
+    out=$(kubectl apply -f - <<<"${manifest}" 2>&1) || die "kubectl apply failed: ${out}"
+    if [[ "${out}" == *unchanged* ]]; then
+        ok "${label}" "unchanged"
+    else
+        changed "${label}" "${out##* }"
+    fi
+}
+
+ensure_namespace() {
+    local manifest
+    manifest=$(kubectl create namespace "$1" --dry-run=client -o yaml)
+    apply_manifest "$1" "${manifest}"
+}
+
 # confirm <question>: yes without asking when CONFIRM=yes or stdin is not a terminal.
 confirm() {
     [[ "${CONFIRM:-}" == "yes" || ! -t 0 ]] && return 0

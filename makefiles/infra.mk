@@ -4,11 +4,12 @@ plan: ## Show what Terraform would change (infra, then ArgoCD)
 	@scripts/tf.sh infra plan
 	@scripts/tf.sh bootstrap plan
 
-up: ## Create or update AKS, then ArgoCD, then the runner token
+up: ## Create or update AKS, then ArgoCD, then the runner and Grafana secrets
 	@scripts/tf.sh infra apply
 	@scripts/tf.sh bootstrap apply
 	@$(MAKE) --no-print-directory kubeconfig
 	@$(MAKE) --no-print-directory runner-secret
+	@$(MAKE) --no-print-directory grafana-secret
 
 destroy: ## Remove ArgoCD, then AKS
 	@scripts/tf.sh bootstrap destroy
