@@ -8,9 +8,12 @@ concurrent: 2
 rbac:
   create: true
 
-# Prometheus-format metrics for the SLOs, scraped by vmagent once VictoriaMetrics is deployed.
+# Prometheus-format metrics, read by the vmagent sidecar (vmagent-sidecar.yaml).
 metrics:
+  # Uh uh
   enabled: true
+  # Single source for the metrics port: the runner listens on it, the sidecar scrapes it.
+  port: 9252
 service:
   enabled: true
 
