@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Creates or updates the Secret holding the runner authentication token (glrt-...). Idempotent.
+# Creates or updates the Secret that holds the runner token.
 set -euo pipefail
 # shellcheck source=scripts/lib.sh
 source "$(dirname "$0")/lib.sh"

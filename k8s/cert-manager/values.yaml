@@ -1,5 +1,4 @@
-# cert-manager chart values. Gets TLS certificates from Let's Encrypt and renews them before they expire.
-# The Let's Encrypt issuer lives in cluster-issuer.yaml.
+# cert-manager gets and renews the Let's Encrypt certificates.
 
 crds:
   # cert-manager brings its own object types (Certificate, ClusterIssuer...).

@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
-# Grants the Azure roles that give people admin access to the cluster.
-# Roles sit on the resource group, so they survive a cluster destroy/recreate. Idempotent.
-# bootstrap-access.sh               every admin listed in CLUSTER_ADMINS
-# bootstrap-access.sh --user <upn>  cluster access for one person only
+# Gives people admin access to the cluster, all CLUSTER_ADMINS or one with --user.
 set -euo pipefail
 # shellcheck source=scripts/lib.sh
 source "$(dirname "$0")/lib.sh"
@@ -16,7 +13,7 @@ readonly ROLE_AKS_USER="Azure Kubernetes Service Cluster User Role"
 # ensure_role <principal_id> <principal_type> <role> <scope> <label>
 ensure_role() {
     local id=$1 type=$2 role=$3 scope=$4 label=$5 count
-    # Filter on principalId: no Graph lookup, works right after the identity is created.
+    # Filter by principalId so a brand new identity is found at once.
     count=$(azs role assignment list --scope "${scope}" --role "${role}" \
         --query "length([?principalId=='${id}'])" -o tsv)
     if (( count > 0 )); then

@@ -1,5 +1,4 @@
-# Let's Encrypt issuer for the cert-manager chart, kept apart from the cert-manager settings.
-# Loaded after values.yaml by k8s/apps/cert-manager.yaml.
+# Let's Encrypt issuer, loaded after values.yaml.
 
 extraObjects:
   - |
@@ -14,7 +13,7 @@ extraObjects:
         privateKeySecretRef:
           name: letsencrypt-account-key
         solvers:
-          # HTTP-01: Let's Encrypt reads a token on port 80, served by Traefik.
+          # Let's Encrypt checks a token on port 80, served by Traefik.
           - http01:
               ingress:
                 ingressClassName: traefik

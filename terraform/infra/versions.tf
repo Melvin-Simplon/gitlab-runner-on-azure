@@ -15,6 +15,6 @@ terraform {
 provider "azurerm" {
   features {}
   subscription_id = var.subscription_id
-  # Students only have Reader on the subscription: registering providers would fail.
+  # Students cannot register Azure providers, so Terraform must not try.
   resource_provider_registrations = "none"
 }

@@ -17,8 +17,7 @@ resource "helm_release" "argocd" {
   values           = [file("${local.k8s_dir}/values.yaml")]
 }
 
-# Root application (app of apps). Installed through the argocd-apps chart rather than
-# kubernetes_manifest, which fails at plan time while the ArgoCD CRDs do not exist yet.
+# Root application, installed with a chart so the ArgoCD CRDs are not needed at plan time.
 resource "helm_release" "root_app" {
   name       = "argocd-root"
   repository = "https://argoproj.github.io/argo-helm"

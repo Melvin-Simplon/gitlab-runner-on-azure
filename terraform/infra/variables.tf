@@ -20,7 +20,7 @@ variable "node_vm_size" {
   default = "Standard_D2s_v3"
 }
 
-# Fixed at 2: the DSv3 quota (10 vCPU) is shared by the whole class, 4 are already used elsewhere.
+# Two nodes, because the DSv3 vCPU quota is shared by the whole class.
 variable "node_count" {
   type    = number
   default = 2

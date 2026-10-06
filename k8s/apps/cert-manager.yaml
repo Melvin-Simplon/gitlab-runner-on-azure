@@ -32,7 +32,7 @@ spec:
       - ServerSideApply=true
       # The ClusterIssuer type only exists once the cert-manager CRDs are installed in the same sync.
       - SkipDryRunOnMissingResource=true
-    # The ClusterIssuer is refused until the cert-manager webhook is up: retry instead of failing.
+    # Retry while the cert-manager webhook is still starting.
     retry:
       limit: 5
       backoff:

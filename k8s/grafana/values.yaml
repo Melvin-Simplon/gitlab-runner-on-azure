@@ -1,6 +1,6 @@
-# grafana chart values (grafana-community). Reached from the Internet through Traefik, over HTTPS.
-# Admin password: "grafana-admin" Secret created once by 'make grafana-secret', never stored in Git.
+# Grafana is reached through Traefik over HTTPS.
 
+# Password stored in the grafana-admin Secret, created by make grafana-secret.
 admin:
   existingSecret: grafana-admin
 

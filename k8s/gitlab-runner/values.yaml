@@ -1,7 +1,7 @@
-# gitlab-runner chart values. Jobs run as pods in the runner's own namespace.
+# gitlab-runner chart values, jobs run as pods in this namespace.
 gitlabUrl: https://gitlab.com/
 
-# The cluster has 4 vCPU in total: 2 jobs at a time, 1 vCPU max each.
+# Two jobs at a time, because the cluster only has 4 vCPU.
 concurrent: 2
 
 # Lets the runner create job pods, secrets and configmaps in its namespace.
@@ -12,13 +12,13 @@ rbac:
 metrics:
   # Uh uh
   enabled: true
-  # Single source for the metrics port: the runner listens on it, the sidecar scrapes it.
+  # The runner listens on this port and the sidecar reads it.
   port: 9252
 service:
   enabled: true
 
 runners:
-  # Holds runner-token, created by 'make runner-secret' from .env: never stored in Git.
+  # Secret created by make runner-secret, so the token never goes to Git.
   secret: gitlab-runner-token
   config: |
     [[runners]]

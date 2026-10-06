@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Runs one Terraform stack: tf.sh <infra|bootstrap> <plan|apply|destroy>
-# apply and destroy always go through a saved plan, applied only after confirmation.
+# Runs plan, apply or destroy on one Terraform stack.
 set -euo pipefail
 # shellcheck source=scripts/lib.sh
 source "$(dirname "$0")/lib.sh"
@@ -15,8 +14,7 @@ readonly PLAN_FILE="tfplan"
 [[ -d "${DIR}" ]] || die "unknown stack: ${STACK}"
 [[ "${ACTION}" =~ ^(plan|apply|destroy)$ ]] || die "unknown action: ${ACTION}"
 
-# The bootstrap stack talks to the Kubernetes API: the cluster must exist and run.
-# Returns 1 when there is nothing to do.
+# Checks that the cluster runs before using the bootstrap stack.
 check_cluster() {
     [[ "${STACK}" == "bootstrap" ]] || return 0
     local state
@@ -32,8 +30,7 @@ check_cluster() {
     esac
 }
 
-# GitLab-managed state over the http backend. Credentials go through TF_HTTP_* variables
-# so they are never persisted in .terraform/.
+# Points Terraform to the GitLab state without saving the token in .terraform/.
 set_backend_env() {
     local address="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${STACK}"
     export TF_HTTP_ADDRESS="${address}"
@@ -47,7 +44,7 @@ set_backend_env() {
 tf_init() {
     task "${STACK} : init"
     local mode=(-reconfigure)
-    # One-off: a working copy still bound to the former Azure Storage backend copies its state to GitLab.
+    # Moves an old Azure Storage state to GitLab, only once.
     if grep -q '"type": "azurerm"' "${DIR}/.terraform/terraform.tfstate" 2>/dev/null; then
         mode=(-migrate-state -force-copy)
         info "migrating the ${STACK} state from Azure Storage to GitLab"
@@ -59,7 +56,7 @@ tf_init() {
     fi
 }
 
-# tf_plan: returns 0 when no change, 2 when changes are planned.
+# Returns 0 when nothing changes and 2 when changes are planned.
 tf_plan() {
     task "${STACK} : plan"
     local args=(-input=false -out="${PLAN_FILE}" -detailed-exitcode)
@@ -78,7 +75,7 @@ tf_plan() {
 tf_apply() {
     task "${STACK} : ${ACTION}"
     confirm "Apply this plan to ${STACK}?" || die "cancelled by the operator"
-    # Plain pipe, no process substitution: tee finishes before the script exits, the error lands in the log.
+    # A plain pipe makes sure the error reaches the log file.
     terraform -chdir="${DIR}" apply -input=false -no-color "${PLAN_FILE}" 2>&1 | tee -a "${LOG_FILE}" \
         || die "terraform apply failed, details in ${LOG_FILE}"
     changed "${STACK}" "plan applied"

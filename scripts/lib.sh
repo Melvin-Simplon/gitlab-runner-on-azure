@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Shared helpers, sourced by every script: Ansible-style output, log file, guards.
-# Diagnostics go to stderr, stdout stays free for return values.
+# Shared helpers sourced by every script.
 
 : "${LOG_FILE:=.logs/pipeline.log}"
 
@@ -13,7 +12,7 @@ fi
 declare -A RECAP=()
 RECAP_KEYS=()
 
-# recap_keys ok changed skipped failed: declares the counters shown in PLAY RECAP, in order.
+# Sets the counters shown in PLAY RECAP, in order.
 recap_keys() {
     RECAP_KEYS=("$@")
     local k
@@ -39,8 +38,7 @@ task() {
     _to_log "TASK [$1]"
 }
 
-# _issue <counter> <color> <label> <target> <message>
-# Called directly (never inside $(...)) so the counter update survives.
+# Prints one result line and updates its counter, never call it inside $(...).
 _issue() {
     local counter=$1 color=$2 label=$3 target=$4 msg=$5
     RECAP[$counter]=$((${RECAP[$counter]:-0} + 1))
@@ -86,8 +84,7 @@ require_context() {
         || die "kubectl points to '${context}', not ${CLUSTER_NAME}: run 'make kubeconfig'"
 }
 
-# apply_manifest <label> <manifest>: kubectl apply prints "unchanged" when nothing differs,
-# that is the idempotence signal. Called directly, never behind a pipe, so the counters survive.
+# Applies a manifest and reports ok when kubectl says unchanged.
 apply_manifest() {
     local label=$1 manifest=$2 out
     out=$(kubectl apply -f - <<<"${manifest}" 2>&1) || die "kubectl apply failed: ${out}"
@@ -104,7 +101,7 @@ ensure_namespace() {
     apply_manifest "$1" "${manifest}"
 }
 
-# confirm <question>: yes without asking when CONFIRM=yes or stdin is not a terminal.
+# Asks yes or no, unless CONFIRM=yes or there is no terminal.
 confirm() {
     [[ "${CONFIRM:-}" == "yes" || ! -t 0 ]] && return 0
     local answer
@@ -112,18 +109,18 @@ confirm() {
     [[ "${answer}" == [yY] ]]
 }
 
-# azs: az scoped to the project subscription (az ad commands do not take --subscription).
+# Runs az on the project subscription.
 azs() {
     az "$@" --subscription "${AZ_SUBSCRIPTION_ID}"
 }
 
-# cluster_state: prints Running, Stopped or absent. Output is captured, logs go to stderr.
+# Prints Running, Stopped or absent.
 cluster_state() {
     azs aks show -g "${AZ_RESOURCE_GROUP}" -n "${CLUSTER_NAME}" \
         --query powerState.code -o tsv 2>/dev/null || printf 'absent'
 }
 
-# recap <host>: prints PLAY RECAP, returns non-zero if anything failed or was unreachable.
+# Prints PLAY RECAP and fails if anything failed.
 recap() {
     local line="" k
     for k in "${RECAP_KEYS[@]}"; do line+="${k}=${RECAP[$k]}  "; done
