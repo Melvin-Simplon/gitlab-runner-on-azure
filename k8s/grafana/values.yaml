@@ -4,6 +4,11 @@
 admin:
   existingSecret: grafana-admin
 
+# Metrics read by the vmagent DaemonSet.
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "3000"
+
 # Helm test pod, useless here.
 testFramework:
   enabled: false
