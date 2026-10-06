@@ -46,6 +46,9 @@ config:
         - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
           regex: "true"
           action: keep
+        # Keep only the container port named in the annotation, to avoid duplicate targets.
+        - source_labels: [__meta_kubernetes_pod_container_port_number, __meta_kubernetes_pod_annotation_prometheus_io_port]
+          action: keep_if_equal
         # Read the port given by the prometheus.io/port annotation.
         - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
           regex: ([^:]+)(?::\d+)?;(\d+)
