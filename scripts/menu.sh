@@ -139,7 +139,7 @@ info_line() {
 
 # Prints the infra facts and the given lines next to the art.
 render() {
-    local lines=() line plain width=0 i rows columns blank offset
+    local lines=() line plain width=0 i rows columns blank
     lines=("$(info_line Cluster "${INFO_CLUSTER}")"
         "$(info_line Grafana "https://${DOMAIN:-?}")"
         "$(info_line "LB IP" "${INFO_IP}")"
@@ -154,11 +154,6 @@ render() {
     if (( columns < 2 + ART_WIDTH + 3 + width )); then
         printf '  %s\n' "${lines[@]}"
     else
-        # Center the menu vertically next to the art.
-        offset=$(( (${#ART[@]} - ${#lines[@]}) / 2 ))
-        if (( offset > 0 )); then
-            for (( i = 0; i < offset; i++ )); do lines=("" "${lines[@]}"); done
-        fi
         rows=$(( ${#lines[@]} > ${#ART[@]} ? ${#lines[@]} : ${#ART[@]} ))
         # Pad under the art with braille blanks, the same glyph as the art.
         blank=""
@@ -170,22 +165,19 @@ render() {
     printf '\n'
 }
 
-# Draws a thin frame around the given lines, with the title in the top border.
+# Draws a thin line with the title above the given lines.
 box() {
-    local title="$1" line plain width pad
+    local title="$1" line plain width
     shift
     width=$(( ${#title} + 2 ))
     for line in "$@"; do
         plain="${line//$'\e'\[*([0-9;])m/}"
         (( ${#plain} > width )) && width="${#plain}"
     done
-    BOX_LINES=("$(fg "${ACCENT}")┌─ $(reset)$(heading "${title}")$(fg "${ACCENT}") $(repeat ─ $(( width - ${#title} - 2 )))─┐$(reset)")
+    BOX_LINES=("$(fg "${ACCENT}")✦── $(reset)$(heading "${title}")$(fg "${ACCENT}") $(repeat ─ $(( width - ${#title} )))✦$(reset)" "")
     for line in "$@"; do
-        plain="${line//$'\e'\[*([0-9;])m/}"
-        pad=$(( width - ${#plain} ))
-        BOX_LINES+=("$(fg "${ACCENT}")│$(reset) ${line}$(repeat ' ' "${pad}") $(fg "${ACCENT}")│$(reset)")
+        BOX_LINES+=("  ${line}")
     done
-    BOX_LINES+=("$(fg "${ACCENT}")└$(repeat ─ $(( width + 2 )))┘$(reset)")
 }
 
 # Prints a character the given number of times.
@@ -194,6 +186,9 @@ repeat() {
     printf -v out '%*s' "$2" ''
     printf '%s' "${out// /$1}"
 }
+
+# Width of the number and command name before a description.
+readonly ITEM_PREFIX=25
 
 # Prints one numbered command with its description.
 item_line() {
@@ -226,16 +221,23 @@ print_main() {
     render "${BOX_LINES[@]}"
 }
 
-# Sub-menu with the targets of one section, with an empty line between choices.
+# Sub-menu of one section, long descriptions wrap so the frame stays next to the art.
 print_section() {
-    local target lines=() number=0
+    local target lines=() number=0 columns desc_width part parts=()
     MENU_TARGETS=()
+    columns="$(tput cols 2> /dev/null || printf '80')"
+    desc_width=$(( columns - 2 - ART_WIDTH - 3 - 6 - ITEM_PREFIX ))
+    (( desc_width < 20 )) && desc_width=20
     section_targets "$1"
     for target in "${TARGETS[@]}"; do
         number=$(( number + 1 ))
         MENU_TARGETS+=("${target}")
         (( number > 1 )) && lines+=("")
-        lines+=("$(item_line "${number}" "${target}" "${DESCRIPTION_OF[${target}]}")")
+        mapfile -t parts < <(fold -s -w "${desc_width}" <<< "${DESCRIPTION_OF[${target}]}")
+        lines+=("$(item_line "${number}" "${target}" "${parts[0]% }")")
+        for part in "${parts[@]:1}"; do
+            lines+=("$(printf '%*s%s%s%s' "${ITEM_PREFIX}" '' "$(fg "${MUTED}")" "${part% }" "$(reset)")")
+        done
     done
     box "$1" "${lines[@]}"
     render "${BOX_LINES[@]}"
