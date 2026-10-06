@@ -1,0 +1,41 @@
+# grafana chart values (grafana-community). Reached from the Internet through Traefik, over HTTPS.
+# Admin password: "grafana-admin" Secret created once by 'make grafana-secret', never stored in Git.
+
+admin:
+  existingSecret: grafana-admin
+
+# Helm test pod, useless here.
+testFramework:
+  enabled: false
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  annotations:
+    # HTTPS entry point only. Certificate: Traefik's default one until cert-manager lands.
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+  hosts:
+    - gitlab-runner-mpetit.francecentral.cloudapp.azure.com
+
+grafana.ini:
+  server:
+    root_url: https://gitlab-runner-mpetit.francecentral.cloudapp.azure.com/
+
+# Grafana reads the metrics from vmselect (read path), never from vminsert.
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: VictoriaMetrics
+        type: prometheus
+        access: proxy
+        url: http://vm-victoria-metrics-cluster-vmselect.monitoring.svc.cluster.local:8481/select/0/prometheus
+        isDefault: true
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 512Mi

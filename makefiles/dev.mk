@@ -7,4 +7,4 @@ lint: ## terraform fmt/validate, tflint, shellcheck
 	@scripts/lint.sh
 
 .PHONY: help lint bootstrap bootstrap-access grant-aks \
-	plan up destroy start stop kubeconfig argocd-ui runner-secret
+	plan up destroy start stop kubeconfig argocd-ui runner-secret grafana-secret grafana-password

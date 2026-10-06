@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Section colors and display order.
-readonly SECTIONS=("Setup=36" "Infra=33" "Cluster=32" "Runner=34" "Dev=35")
+readonly SECTIONS=("Setup=36" "Infra=33" "Cluster=32" "Runner=34" "Grafana=33" "Dev=35")
 
 main() {
     local -A lines=()
