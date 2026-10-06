@@ -13,6 +13,16 @@ podAnnotations:
 testFramework:
   enabled: false
 
+# Small Azure disk so dashboards made in the UI survive a pod restart.
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClassName: default
+
+# The disk fits only one pod at a time, so the old pod stops before the new one starts.
+deploymentStrategy:
+  type: Recreate
+
 ingress:
   enabled: true
   ingressClassName: traefik
