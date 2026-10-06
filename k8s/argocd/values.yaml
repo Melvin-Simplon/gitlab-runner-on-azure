@@ -5,6 +5,10 @@ dex:
 configs:
   params:
     server.insecure: false
+  cm:
+    # Checks Git every 30s
+    timeout.reconciliation: 30s
+    timeout.reconciliation.jitter: 0s
 
 # Metrics exposed now, scraped once the Prometheus agents exist (phase 3).
 controller:
