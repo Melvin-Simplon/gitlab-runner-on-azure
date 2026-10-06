@@ -1,8 +1,12 @@
 # victoria-metrics-cluster chart values.
 # Write path: agents -> vminsert -> vmstorage. Read path: Grafana -> vmselect -> vmstorage.
 # Nothing here pulls metrics: vminsert only receives what agents push (remote write).
+# Each component also exposes its own metrics, read by the vmagent DaemonSet (podAnnotations).
 
 vminsert:
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8480"
   replicaCount: 1
   extraArgs:
     # Every sample is written to both vmstorage pods, so losing one node loses no data.
@@ -15,6 +19,9 @@ vminsert:
       memory: 256Mi
 
 vmselect:
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8481"
   replicaCount: 1
   extraArgs:
     # Answers are not marked partial while one vmstorage is down.
@@ -29,6 +36,9 @@ vmselect:
       memory: 512Mi
 
 vmstorage:
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8482"
   replicaCount: 2
   retentionPeriod: 15d
   persistentVolume:
