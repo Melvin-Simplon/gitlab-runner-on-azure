@@ -1,0 +1,32 @@
+# Official chart from traefik.github.io, values from this repository.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://traefik.github.io/charts
+      chart: traefik
+      targetRevision: 41.6.1
+      helm:
+        releaseName: traefik
+        valueFiles:
+          - $values/k8s/traefik/values.yaml
+    - repoURL: https://gitlab.com/WhiteMuush/gitlab-runner-on-azure.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: traefik
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      # The Traefik CRDs are too large for the annotation a client-side apply would add.
+      - ServerSideApply=true

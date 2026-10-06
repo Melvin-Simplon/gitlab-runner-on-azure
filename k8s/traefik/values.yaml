@@ -1,0 +1,14 @@
+# traefik chart values. Single entry point of the cluster from the Internet (reverse proxy).
+
+service:
+  # LoadBalancer (chart default): Azure gives the Service a public IP.
+  annotations:
+    # Free DNS name on that IP: gitlab-runner-mpetit.francecentral.cloudapp.azure.com
+    service.beta.kubernetes.io/azure-dns-label-name: gitlab-runner-mpetit
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
