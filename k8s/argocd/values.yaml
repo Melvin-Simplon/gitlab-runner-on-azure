@@ -10,16 +10,28 @@ configs:
     timeout.reconciliation: 30s
     timeout.reconciliation.jitter: 0s
 
-# Metrics exposed now, scraped once the Prometheus agents exist (phase 3).
+# Metrics read by the vmagent DaemonSet: each pod says "read me" on its own metrics port.
 controller:
   metrics:
     enabled: true
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8082"
 server:
   metrics:
     enabled: true
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8083"
 repoServer:
   metrics:
     enabled: true
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8084"
 applicationSet:
   metrics:
     enabled: true
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
