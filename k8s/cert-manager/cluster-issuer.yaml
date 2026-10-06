@@ -1,0 +1,20 @@
+# Let's Encrypt issuer for the cert-manager chart, kept apart from the cert-manager settings.
+# Loaded after values.yaml by k8s/apps/cert-manager.yaml.
+
+extraObjects:
+  - |
+    apiVersion: cert-manager.io/v1
+    kind: ClusterIssuer
+    metadata:
+      name: letsencrypt
+    spec:
+      acme:
+        server: https://acme-v02.api.letsencrypt.org/directory
+        # Private key of our Let's Encrypt account, created and kept by cert-manager.
+        privateKeySecretRef:
+          name: letsencrypt-account-key
+        solvers:
+          # HTTP-01: Let's Encrypt reads a token on port 80, served by Traefik.
+          - http01:
+              ingress:
+                ingressClassName: traefik

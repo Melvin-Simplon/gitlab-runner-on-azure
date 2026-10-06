@@ -14,6 +14,7 @@ Production-ready Kubernetes cluster on Azure hosting GitLab CI runners, with a f
 - [vmagent](https://docs.victoriametrics.com/victoriametrics/vmagent/)
 - [Traefik](https://doc.traefik.io/traefik/)
 - [Grafana](https://grafana.com/docs/grafana/latest/)
+- [cert-manager](https://cert-manager.io/docs/)
 
 ## Contributing
 

@@ -1,0 +1,31 @@
+# cert-manager chart values. Gets TLS certificates from Let's Encrypt and renews them before they expire.
+# The Let's Encrypt issuer lives in cluster-issuer.yaml.
+
+crds:
+  # cert-manager brings its own object types (Certificate, ClusterIssuer...).
+  enabled: true
+  # Kept if cert-manager is removed, so the certificates are not deleted with it.
+  keep: true
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
+webhook:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+cainjector:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
