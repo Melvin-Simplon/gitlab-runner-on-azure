@@ -12,11 +12,17 @@ ingress:
   enabled: true
   ingressClassName: traefik
   annotations:
-    # HTTPS entry point only. Certificate: Traefik's default one until cert-manager lands.
+    # HTTPS entry point only.
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
+    # cert-manager gets a Let's Encrypt certificate for the host below and stores it in grafana-tls.
+    cert-manager.io/cluster-issuer: letsencrypt
   hosts:
     - gitlab-runner-mpetit.francecentral.cloudapp.azure.com
+  tls:
+    - secretName: grafana-tls
+      hosts:
+        - gitlab-runner-mpetit.francecentral.cloudapp.azure.com
 
 grafana.ini:
   server:
