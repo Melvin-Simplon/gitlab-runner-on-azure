@@ -10,6 +10,7 @@ Production-ready Kubernetes cluster on Azure hosting GitLab CI runners, with a f
 ## Documentation
 
 - [Project brief](docs/consignes.md)
+- [VictoriaMetrics Helm charts](https://docs.victoriametrics.com/helm/)
 
 ## Contributing
 

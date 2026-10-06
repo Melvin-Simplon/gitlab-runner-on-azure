@@ -1,0 +1,52 @@
+# victoria-metrics-cluster chart values.
+# Write path: agents -> vminsert -> vmstorage. Read path: Grafana -> vmselect -> vmstorage.
+# Nothing here pulls metrics: vminsert only receives what agents push (remote write).
+
+vminsert:
+  replicaCount: 1
+  extraArgs:
+    # Every sample is written to both vmstorage pods, so losing one node loses no data.
+    replicationFactor: "2"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+vmselect:
+  replicaCount: 1
+  extraArgs:
+    # Answers are not marked partial while one vmstorage is down.
+    replicationFactor: "2"
+    # Drops the duplicate copies read from the two vmstorage pods.
+    dedup.minScrapeInterval: 1ms
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+
+vmstorage:
+  replicaCount: 2
+  retentionPeriod: 15d
+  persistentVolume:
+    enabled: true
+    size: 8Gi
+    # Azure managed disk.
+    storageClassName: default
+  # One vmstorage per node, otherwise both copies could end up on the same machine.
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app: vmstorage
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
