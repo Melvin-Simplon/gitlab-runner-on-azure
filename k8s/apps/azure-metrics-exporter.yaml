@@ -1,27 +1,27 @@
-# Official chart from vmware-tanzu.github.io, values from this repository.
+# Official chart from webdevops.github.io, values from this repository.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: velero
+  name: azure-metrics-exporter
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   sources:
-    - repoURL: https://vmware-tanzu.github.io/helm-charts
-      chart: velero
-      targetRevision: 12.2.0
+    - repoURL: https://webdevops.github.io/helm-charts
+      chart: azure-metrics-exporter
+      targetRevision: 1.2.11
       helm:
-        releaseName: velero
+        releaseName: azure-metrics-exporter
         valueFiles:
-          - $values/k8s/velero/values.yaml
+          - $values/k8s/azure-metrics-exporter/values.yaml
     - repoURL: https://gitlab.com/WhiteMuush/gitlab-runner-on-azure.git
       targetRevision: main
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: velero
+    namespace: azure-metrics
   syncPolicy:
     automated:
       prune: true
@@ -29,6 +29,3 @@ spec:
     syncOptions:
       # Terraform creates this namespace.
       - CreateNamespace=false
-      - ServerSideApply=true
-      # The Schedule type is installed by this same sync.
-      - SkipDryRunOnMissingResource=true

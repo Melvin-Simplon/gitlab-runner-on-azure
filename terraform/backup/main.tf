@@ -1,4 +1,4 @@
-# This stack only holds the backups, so it can outlive the cluster.
+# This stack keeps the backups when the cluster is destroyed.
 
 data "azurerm_resource_group" "this" {
   name = var.resource_group_name
@@ -19,7 +19,7 @@ resource "azurerm_storage_account" "velero" {
   account_replication_type = "LRS"
   min_tls_version          = "TLS1_2"
 
-  # No access keys: Velero must log in with its Entra identity.
+  # Access keys are off.
   shared_access_key_enabled       = false
   default_to_oauth_authentication = true
   allow_nested_items_to_be_public = false

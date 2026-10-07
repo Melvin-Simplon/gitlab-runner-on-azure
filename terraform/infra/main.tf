@@ -59,13 +59,13 @@ resource "azurerm_kubernetes_cluster" "this" {
   tags = local.tags
 }
 
-# Storage account of the backup stack, which must be applied first.
+# Created by the backup stack.
 data "azurerm_storage_account" "velero" {
   name                = var.backup_storage_account
   resource_group_name = data.azurerm_resource_group.this.name
 }
 
-# Azure identity that Velero borrows, without any secret.
+# Azure identity of Velero.
 resource "azurerm_user_assigned_identity" "velero" {
   name                = "id-velero"
   location            = data.azurerm_resource_group.this.location
@@ -73,18 +73,49 @@ resource "azurerm_user_assigned_identity" "velero" {
   tags                = local.tags
 }
 
-# Velero may only read and write blobs in the backup storage account.
+# Velero can only write in the backup storage account.
 resource "azurerm_role_assignment" "velero_storage" {
   scope                = data.azurerm_storage_account.velero.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.velero.principal_id
 }
 
-# Only the velero service account of the velero namespace may use this identity.
+# Only the Velero service account can use this identity.
 resource "azurerm_federated_identity_credential" "velero" {
   name                      = "velero"
   user_assigned_identity_id = azurerm_user_assigned_identity.velero.id
   audience                  = ["api://AzureADTokenExchange"]
   issuer                    = azurerm_kubernetes_cluster.this.oidc_issuer_url
   subject                   = "system:serviceaccount:velero:velero"
+}
+
+# Azure identity of the exporter.
+resource "azurerm_user_assigned_identity" "azure_metrics" {
+  name                = "id-azure-metrics"
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
+  tags                = local.tags
+}
+
+# Read the storage account metrics.
+resource "azurerm_role_assignment" "azure_metrics_project" {
+  scope                = data.azurerm_resource_group.this.id
+  role_definition_name = "Monitoring Reader"
+  principal_id         = azurerm_user_assigned_identity.azure_metrics.principal_id
+}
+
+# Read the disk metrics in the AKS node group.
+resource "azurerm_role_assignment" "azure_metrics_nodes" {
+  scope                = azurerm_kubernetes_cluster.this.node_resource_group_id
+  role_definition_name = "Monitoring Reader"
+  principal_id         = azurerm_user_assigned_identity.azure_metrics.principal_id
+}
+
+# Only the exporter service account can use this identity.
+resource "azurerm_federated_identity_credential" "azure_metrics" {
+  name                      = "azure-metrics-exporter"
+  user_assigned_identity_id = azurerm_user_assigned_identity.azure_metrics.id
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azurerm_kubernetes_cluster.this.oidc_issuer_url
+  subject                   = "system:serviceaccount:azure-metrics:azure-metrics-exporter"
 }

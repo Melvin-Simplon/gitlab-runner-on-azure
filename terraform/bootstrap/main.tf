@@ -29,7 +29,7 @@ resource "helm_release" "root_app" {
   depends_on = [helm_release.argocd]
 }
 
-# Identity of the infra stack, read here because its id changes with each new cluster.
+# The identity id changes with each new cluster.
 data "azurerm_user_assigned_identity" "velero" {
   name                = "id-velero"
   resource_group_name = var.resource_group_name
@@ -41,7 +41,7 @@ resource "kubernetes_namespace_v1" "velero" {
   }
 }
 
-# Velero runs with this service account, linked here to its Azure identity.
+# Links Velero to its Azure identity.
 resource "kubernetes_service_account_v1" "velero" {
   metadata {
     name      = "velero"
@@ -52,7 +52,7 @@ resource "kubernetes_service_account_v1" "velero" {
   }
 }
 
-# Azure ids for the Velero plugin, with no password inside.
+# Azure ids for the Velero plugin.
 resource "kubernetes_secret_v1" "velero_azure" {
   metadata {
     name      = "velero-azure"
@@ -64,5 +64,28 @@ resource "kubernetes_secret_v1" "velero_azure" {
       AZURE_RESOURCE_GROUP=${var.resource_group_name}
       AZURE_CLOUD_NAME=AzurePublicCloud
     EOT
+  }
+}
+
+# The identity id changes with each new cluster.
+data "azurerm_user_assigned_identity" "azure_metrics" {
+  name                = "id-azure-metrics"
+  resource_group_name = var.resource_group_name
+}
+
+resource "kubernetes_namespace_v1" "azure_metrics" {
+  metadata {
+    name = "azure-metrics"
+  }
+}
+
+# Links the exporter to its Azure identity.
+resource "kubernetes_service_account_v1" "azure_metrics" {
+  metadata {
+    name      = "azure-metrics-exporter"
+    namespace = kubernetes_namespace_v1.azure_metrics.metadata[0].name
+    annotations = {
+      "azure.workload.identity/client-id" = data.azurerm_user_assigned_identity.azure_metrics.client_id
+    }
   }
 }

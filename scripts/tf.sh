@@ -30,7 +30,7 @@ check_cluster() {
     esac
 }
 
-# Keeps the backups unless someone types y, even with CONFIRM=yes.
+# Only a typed y deletes the backups.
 check_backup_destroy() {
     [[ "${STACK}" == "backup" && "${ACTION}" == "destroy" ]] || return 0
     local answer=""

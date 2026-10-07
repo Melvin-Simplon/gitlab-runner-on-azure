@@ -1,4 +1,4 @@
-# kube-state-metrics gives the state of the Kubernetes objects (pods, deployments, nodes...).
+# kube-state-metrics shows the state of pods, deployments and nodes.
 
 # Metrics read by the vmagent DaemonSet.
 podAnnotations:

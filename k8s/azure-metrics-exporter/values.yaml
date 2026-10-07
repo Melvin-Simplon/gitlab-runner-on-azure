@@ -1,0 +1,32 @@
+# The exporter reads Azure metrics of the disks and the storage account.
+
+# This label gives the pod its Azure identity.
+podLabels:
+  azure.workload.identity/use: "true"
+
+# Terraform creates this service account.
+serviceAccount:
+  create: false
+  name: azure-metrics-exporter
+
+# How the metric names are built.
+env:
+  METRIC_TEMPLATE: "{name}_{metric}_{aggregation}_{unit}"
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
+
+# Only the monitoring namespace can call the exporter.
+netpol:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 8080
+          protocol: TCP

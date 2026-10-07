@@ -67,10 +67,10 @@ config:
           regex: (.+)
           target_label: job
 
-    # The kubelet of this agent's node: node health and disk use of the volumes.
+    # Kubelet metrics of this node.
     - job_name: kubelet
       scheme: https
-      # The kubelet certificate is checked with the cluster CA.
+      # Check the kubelet certificate.
       tls_config:
         ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -84,7 +84,7 @@ config:
         - source_labels: [__meta_kubernetes_node_name]
           target_label: node
 
-    # cAdvisor inside the kubelet: CPU and memory used by each container.
+    # CPU and memory used by each container.
     - job_name: cadvisor
       scheme: https
       metrics_path: /metrics/cadvisor
@@ -99,3 +99,65 @@ config:
       relabel_configs:
         - source_labels: [__meta_kubernetes_node_name]
           target_label: node
+
+    # Azure metrics of the disks.
+    - job_name: azure-disks
+      scrape_interval: 5m
+      scrape_timeout: 1m
+      metrics_path: /probe/metrics/resourcegraph
+      params:
+        subscription: ["5e683e0f-b00c-48d6-9769-5aaf598de8f1"]
+        resourceType: ["Microsoft.Compute/disks"]
+        name: ["azure_disk"]
+        metric:
+          - Composite Disk Read Bytes/sec
+          - Composite Disk Write Bytes/sec
+          - Composite Disk Read Operations/sec
+          - Composite Disk Write Operations/sec
+        aggregation: ["average"]
+        interval: ["PT5M"]
+        timespan: ["PT5M"]
+      kubernetes_sd_configs: &azure_exporter
+        - role: pod
+          namespaces:
+            names: [azure-metrics]
+          # Only one agent reads the exporter.
+          selectors:
+            - role: pod
+              field: spec.nodeName=%{NODE_NAME}
+      relabel_configs: &azure_exporter_port
+        - source_labels: [__meta_kubernetes_pod_container_port_number]
+          regex: "8080"
+          action: keep
+
+    # Availability, requests and latency of the backup storage account.
+    - job_name: azure-storage
+      scrape_interval: 5m
+      scrape_timeout: 1m
+      metrics_path: /probe/metrics/resourcegraph
+      params:
+        subscription: ["5e683e0f-b00c-48d6-9769-5aaf598de8f1"]
+        resourceType: ["Microsoft.Storage/storageAccounts"]
+        name: ["azure_storage"]
+        metric: [Availability, Transactions, SuccessE2ELatency]
+        aggregation: ["average", "total"]
+        interval: ["PT5M"]
+        timespan: ["PT5M"]
+      kubernetes_sd_configs: *azure_exporter
+      relabel_configs: *azure_exporter_port
+
+    # Azure measures the used space once per hour.
+    - job_name: azure-storage-capacity
+      scrape_interval: 15m
+      scrape_timeout: 1m
+      metrics_path: /probe/metrics/resourcegraph
+      params:
+        subscription: ["5e683e0f-b00c-48d6-9769-5aaf598de8f1"]
+        resourceType: ["Microsoft.Storage/storageAccounts"]
+        name: ["azure_storage"]
+        metric: [UsedCapacity]
+        aggregation: ["average"]
+        interval: ["PT1H"]
+        timespan: ["PT1H"]
+      kubernetes_sd_configs: *azure_exporter
+      relabel_configs: *azure_exporter_port
