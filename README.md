@@ -15,6 +15,9 @@ Production-ready Kubernetes cluster on Azure hosting GitLab CI runners, with a f
 - [Traefik](https://doc.traefik.io/traefik/)
 - [Grafana](https://grafana.com/docs/grafana/latest/)
 - [cert-manager](https://cert-manager.io/docs/)
+- [node-exporter](https://github.com/prometheus/node_exporter)
+- [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics)
+- [Kubernetes system metrics (kubelet, cAdvisor)](https://kubernetes.io/docs/concepts/cluster-administration/system-metrics/)
 
 ## Contributing
 
