@@ -98,14 +98,14 @@ server:
               labels:
                 severity: critical
               annotations:
-                summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} is not ready."
+                summary: "Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} is not ready."
 
             - alert: CertificateExpiresSoon
               expr: certmanager_certificate_expiration_timestamp_seconds - time() < 14 * 86400
               labels:
                 severity: warning
               annotations:
-                summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in less than 14 days."
+                summary: "Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} expires in less than 14 days."
 
         - name: backups
           rules:
