@@ -1,19 +1,18 @@
+<div align="center">
 <br/>
-<h1 align="center">GitLab Runners on AKS</h1>
-
-<p align="center">
-  <img src="https://skillicons.dev/icons?i=azure,kubernetes,terraform,gitlab,grafana,bash&perline=6" alt="Azure, Kubernetes, Terraform, GitLab, Grafana, Bash" />
-</p>
-<p align="center">
-  <i>A production-ready Kubernetes cluster that runs GitLab CI jobs, watched by VictoriaMetrics, VictoriaLogs and Grafana, backed up by Velero, and deployed by ArgoCD</i>
-</p>
-
-<p align="center"><sub>Contributors</sub></p>
-
-<p align="center">
-  <a href="https://github.com/WhiteMuush"><img src="https://github.com/WhiteMuush.png" width="56" alt="WhiteMuush" /></a>
-  <a href="https://github.com/ororck"><img src="https://github.com/ororck.png" width="56" alt="ororck" /></a>
-</p>
+<h1>GitLab Runners on AKS</h1>
+<img src="https://skillicons.dev/icons?i=azure,kubernetes,terraform,gitlab,grafana,bash&perline=6" alt="Azure, Kubernetes, Terraform, GitLab, Grafana, Bash" />
+<br/>
+<br/>
+<i>A production-ready Kubernetes cluster that runs GitLab CI jobs, watched by VictoriaMetrics, VictoriaLogs and Grafana, backed up by Velero, and deployed by ArgoCD</i>
+<br/>
+<br/>
+<sub>Contributors</sub>
+<br/>
+<br/>
+<a href="https://github.com/WhiteMuush"><img src="https://github.com/WhiteMuush.png" width="56" alt="WhiteMuush" /></a>
+<a href="https://github.com/ororck"><img src="https://github.com/ororck.png" width="56" alt="ororck" /></a>
+</div>
 
 <br/>
 
