@@ -4,16 +4,23 @@ server:
   config:
     alerts:
       groups:
+        # The machines of the cluster.
         - name: nodes
           rules:
+            # Kubernetes cannot use this node anymore.
             - alert: NodeNotReady
+              # The question vmalert asks to the metrics.
               expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+              # How long the problem must last before the alert fires.
               for: 5m
               labels:
+                # Critical means something is down, warning means something is at risk.
                 severity: critical
               annotations:
+                # The sentence shown in Grafana.
                 summary: "Node {{ $labels.node }} is not ready."
 
+            # A full disk stops the pods of this node.
             - alert: NodeDiskAlmostFull
               expr: |
                 node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"}
@@ -24,6 +31,7 @@ server:
               annotations:
                 summary: "Disk {{ $labels.mountpoint }} of {{ $labels.node }} has less than 10% free."
 
+            # Without memory, Kubernetes starts killing pods.
             - alert: NodeMemoryLow
               expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.10
               for: 10m
@@ -32,8 +40,10 @@ server:
               annotations:
                 summary: "Node {{ $labels.node }} has less than 10% free memory."
 
+        # The pods and their volumes.
         - name: workloads
           rules:
+            # The pod starts, crashes, and starts again.
             - alert: PodCrashLooping
               expr: increase(kube_pod_container_status_restarts_total[15m]) > 3
               for: 5m
@@ -42,6 +52,7 @@ server:
               annotations:
                 summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} restarts again and again."
 
+            # The pod is stuck before it can run.
             - alert: PodNotRunning
               expr: sum by (namespace, pod) (kube_pod_status_phase{phase=~"Pending|Unknown|Failed"}) > 0
               for: 15m
@@ -50,6 +61,7 @@ server:
               annotations:
                 summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has not been running for 15 minutes."
 
+            # Some pods of the deployment are not ready.
             - alert: DeploymentReplicasMissing
               expr: kube_deployment_spec_replicas != kube_deployment_status_replicas_available
               for: 15m
@@ -58,6 +70,7 @@ server:
               annotations:
                 summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} is missing pods."
 
+            # A full volume stops the app that writes on it.
             - alert: VolumeAlmostFull
               expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.15
               for: 10m
@@ -66,8 +79,10 @@ server:
               annotations:
                 summary: "Volume {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has less than 15% free."
 
+        # The tools that run the cluster: vmagent, ArgoCD, cert-manager.
         - name: platform
           rules:
+            # A component stopped sending its metrics.
             - alert: TargetDown
               expr: up == 0
               for: 5m
@@ -76,6 +91,7 @@ server:
               annotations:
                 summary: "vmagent cannot read the metrics of {{ $labels.job }} on {{ $labels.instance }}."
 
+            # The cluster no longer matches Git.
             - alert: ArgoAppNotSynced
               expr: argocd_app_info{sync_status!="Synced"} == 1
               for: 15m
@@ -84,6 +100,7 @@ server:
               annotations:
                 summary: "ArgoCD app {{ $labels.name }} differs from Git."
 
+            # An app deployed by ArgoCD is broken.
             - alert: ArgoAppNotHealthy
               expr: argocd_app_info{health_status!="Healthy"} == 1
               for: 15m
@@ -92,6 +109,7 @@ server:
               annotations:
                 summary: "ArgoCD app {{ $labels.name }} is {{ $labels.health_status }}."
 
+            # Grafana loses HTTPS without this certificate.
             - alert: CertificateNotReady
               expr: certmanager_certificate_ready_status{condition="False"} == 1
               for: 10m
@@ -100,6 +118,7 @@ server:
               annotations:
                 summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} is not ready."
 
+            # cert-manager should renew it 30 days before the end.
             - alert: CertificateExpiresSoon
               expr: certmanager_certificate_expiration_timestamp_seconds - time() < 14 * 86400
               labels:
@@ -107,8 +126,10 @@ server:
               annotations:
                 summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in less than 14 days."
 
+        # The Velero backups and their Azure storage.
         - name: backups
           rules:
+            # The last backups could not be saved.
             - alert: VeleroBackupFailed
               expr: increase(velero_backup_failure_total[6h]) > 0
               labels:
@@ -116,6 +137,7 @@ server:
               annotations:
                 summary: "A Velero backup failed in the last 6 hours."
 
+            # A backup is expected every 6 hours.
             - alert: VeleroBackupTooOld
               expr: time() - velero_backup_last_successful_timestamp{schedule!=""} > 7 * 3600
               for: 15m
@@ -124,6 +146,7 @@ server:
               annotations:
                 summary: "Schedule {{ $labels.schedule }} has no successful backup for 7 hours."
 
+            # Velero cannot save backups if Azure storage is down.
             - alert: AzureStorageUnavailable
               expr: azure_storage_availability_average_percent < 99
               for: 15m
