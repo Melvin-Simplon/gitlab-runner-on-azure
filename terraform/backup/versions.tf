@@ -17,6 +17,6 @@ provider "azurerm" {
   subscription_id = var.subscription_id
   # Students cannot register Azure providers, so Terraform must not try.
   resource_provider_registrations = "none"
-  # The storage account has no access keys, so Terraform uses Entra ID too.
+  # Terraform logs in with Entra ID, not with a key.
   storage_use_azuread = true
 }

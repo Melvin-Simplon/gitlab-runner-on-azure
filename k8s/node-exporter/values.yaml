@@ -1,4 +1,4 @@
-# One node-exporter per node gives the CPU, memory, disk and network of the node.
+# node-exporter measures CPU, memory, disk and network of each node.
 
 # Metrics read by the vmagent DaemonSet.
 podAnnotations:

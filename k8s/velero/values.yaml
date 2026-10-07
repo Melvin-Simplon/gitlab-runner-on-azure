@@ -1,6 +1,6 @@
-# Velero saves every Kubernetes resource of the cluster into Azure Blob Storage.
+# Velero saves the cluster resources into Azure.
 
-# The Azure plugin is copied into Velero before it starts.
+# Adds the Azure plugin to Velero.
 initContainers:
   - name: velero-plugin-for-microsoft-azure
     image: velero/velero-plugin-for-microsoft-azure:v1.14.4
@@ -8,11 +8,11 @@ initContainers:
       - mountPath: /target
         name: plugins
 
-# This label asks AKS to give the pod its Azure identity token.
+# This label gives the pod its Azure identity.
 podLabels:
   azure.workload.identity/use: "true"
 
-# Service account and Secret come from the bootstrap Terraform stack, because they hold Azure ids.
+# Terraform creates the service account and the Secret.
 serviceAccount:
   server:
     create: false
@@ -30,10 +30,10 @@ configuration:
       config:
         resourceGroup: mpetitRG
         storageAccount: stmpetitvelero
-        # Log in with the Entra identity, the storage account has no keys.
+        # Log in with the Azure identity, not with a key.
         useAAD: "true"
 
-# Only the Kubernetes resources are saved, not the disk contents.
+# Save the Kubernetes resources, not the disk contents.
 snapshotsEnabled: false
 deployNodeAgent: false
 
