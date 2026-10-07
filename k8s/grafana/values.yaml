@@ -51,6 +51,12 @@ plugins:
 datasources:
   datasources.yaml:
     apiVersion: 1
+    # Recreates the two datasources so they get their fixed uid.
+    deleteDatasources:
+      - name: VictoriaMetrics
+        orgId: 1
+      - name: VictoriaLogs
+        orgId: 1
     datasources:
       - name: VictoriaMetrics
         uid: victoriametrics
