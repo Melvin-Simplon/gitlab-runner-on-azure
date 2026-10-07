@@ -53,11 +53,13 @@ datasources:
     apiVersion: 1
     datasources:
       - name: VictoriaMetrics
+        uid: victoriametrics
         type: prometheus
         access: proxy
         url: http://vm-victoria-metrics-cluster-vmselect.monitoring.svc.cluster.local:8481/select/0/prometheus
         isDefault: true
       - name: VictoriaLogs
+        uid: victorialogs
         type: victoriametrics-logs-datasource
         access: proxy
         url: http://victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local:9428
@@ -68,3 +70,93 @@ resources:
     memory: 128Mi
   limits:
     memory: 512Mi
+
+# One Grafana folder per provider.
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: kubernetes
+        folder: Kubernetes
+        type: file
+        disableDeletion: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes
+      - name: observability
+        folder: Observability
+        type: file
+        disableDeletion: true
+        options:
+          path: /var/lib/grafana/dashboards/observability
+      - name: platform
+        folder: Platform
+        type: file
+        disableDeletion: true
+        options:
+          path: /var/lib/grafana/dashboards/platform
+
+# Community dashboards downloaded from grafana.com when Grafana starts.
+dashboards:
+  kubernetes:
+    k8s-global:
+      gnetId: 15757
+      revision: 43
+      datasource:
+        - name: DS_PROMETHEUS
+          value: victoriametrics
+    k8s-namespaces:
+      gnetId: 15758
+      revision: 46
+      datasource:
+        - name: DS_PROMETHEUS
+          value: victoriametrics
+    k8s-nodes:
+      gnetId: 15759
+      revision: 40
+      datasource:
+        - name: DS_PROMETHEUS
+          value: victoriametrics
+    k8s-pods:
+      gnetId: 15760
+      revision: 41
+      datasource:
+        - name: DS_PROMETHEUS
+          value: victoriametrics
+    node-exporter-full:
+      gnetId: 1860
+      revision: 45
+  observability:
+    victoriametrics-cluster:
+      gnetId: 11176
+      revision: 61
+    vmagent:
+      gnetId: 12683
+      revision: 42
+    victorialogs:
+      gnetId: 22084
+      revision: 12
+      datasource:
+        - name: DS_PROMETHEUS
+          value: victoriametrics
+    victorialogs-collector:
+      gnetId: 24513
+      revision: 3
+      datasource:
+        - name: DS_PROMETHEUS
+          value: victoriametrics
+  platform:
+    # Official dashboard of the ArgoCD version that runs here.
+    argocd:
+      url: https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.3/examples/dashboard.json
+    traefik:
+      gnetId: 17346
+      revision: 9
+      datasource:
+        - name: DS_PROMETHEUS
+          value: victoriametrics
+    cert-manager:
+      gnetId: 11001
+      revision: 1
+    velero:
+      gnetId: 16829
+      revision: 5

@@ -1,9 +1,6 @@
 # kube-state-metrics shows the state of pods, deployments and nodes.
 
-# Metrics read by the vmagent DaemonSet.
-podAnnotations:
-  prometheus.io/scrape: "true"
-  prometheus.io/port: "8080"
+# vmagent reads it with its own job, see k8s/vmagent/values.yaml.
 
 resources:
   requests:
