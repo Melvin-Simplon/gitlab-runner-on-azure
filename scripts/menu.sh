@@ -6,7 +6,7 @@ shopt -s extglob
 : "${MAKE:=make}"
 
 # Display order of the sections, unknown ones come last.
-readonly SECTION_ORDER=("Setup" "Infra" "Cluster" "Runner" "Grafana" "Dev")
+readonly SECTION_ORDER=("Setup" "Infra" "Cluster" "Status" "Runner" "Grafana" "Dev")
 # Accent color (Mew pink), grey for descriptions and orange for warnings.
 readonly ACCENT=212
 readonly MUTED=245
