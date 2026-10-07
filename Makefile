@@ -28,6 +28,7 @@ export TF_VAR_backup_storage_account = $(BACKUP_STORAGE_ACCOUNT)
 include makefiles/setup.mk
 include makefiles/infra.mk
 include makefiles/cluster.mk
+include makefiles/status.mk
 include makefiles/runner.mk
 include makefiles/grafana.mk
 include makefiles/dev.mk
