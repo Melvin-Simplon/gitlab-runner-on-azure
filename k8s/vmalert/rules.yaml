@@ -1,0 +1,133 @@
+# Alert rules checked by vmalert every minute.
+
+server:
+  config:
+    alerts:
+      groups:
+        - name: nodes
+          rules:
+            - alert: NodeNotReady
+              expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: "Node {{ $labels.node }} is not ready."
+
+            - alert: NodeDiskAlmostFull
+              expr: |
+                node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"}
+                  / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"} < 0.10
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Disk {{ $labels.mountpoint }} of {{ $labels.node }} has less than 10% free."
+
+            - alert: NodeMemoryLow
+              expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.10
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Node {{ $labels.node }} has less than 10% free memory."
+
+        - name: workloads
+          rules:
+            - alert: PodCrashLooping
+              expr: increase(kube_pod_container_status_restarts_total[15m]) > 3
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} restarts again and again."
+
+            - alert: PodNotRunning
+              expr: sum by (namespace, pod) (kube_pod_status_phase{phase=~"Pending|Unknown|Failed"}) > 0
+              for: 15m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has not been running for 15 minutes."
+
+            - alert: DeploymentReplicasMissing
+              expr: kube_deployment_spec_replicas != kube_deployment_status_replicas_available
+              for: 15m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} is missing pods."
+
+            - alert: VolumeAlmostFull
+              expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.15
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Volume {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has less than 15% free."
+
+        - name: platform
+          rules:
+            - alert: TargetDown
+              expr: up == 0
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: "vmagent cannot read the metrics of {{ $labels.job }} on {{ $labels.instance }}."
+
+            - alert: ArgoAppNotSynced
+              expr: argocd_app_info{sync_status!="Synced"} == 1
+              for: 15m
+              labels:
+                severity: warning
+              annotations:
+                summary: "ArgoCD app {{ $labels.name }} differs from Git."
+
+            - alert: ArgoAppNotHealthy
+              expr: argocd_app_info{health_status!="Healthy"} == 1
+              for: 15m
+              labels:
+                severity: warning
+              annotations:
+                summary: "ArgoCD app {{ $labels.name }} is {{ $labels.health_status }}."
+
+            - alert: CertificateNotReady
+              expr: certmanager_certificate_ready_status{condition="False"} == 1
+              for: 10m
+              labels:
+                severity: critical
+              annotations:
+                summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} is not ready."
+
+            - alert: CertificateExpiresSoon
+              expr: certmanager_certificate_expiration_timestamp_seconds - time() < 14 * 86400
+              labels:
+                severity: warning
+              annotations:
+                summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in less than 14 days."
+
+        - name: backups
+          rules:
+            - alert: VeleroBackupFailed
+              expr: increase(velero_backup_failure_total[6h]) > 0
+              labels:
+                severity: critical
+              annotations:
+                summary: "A Velero backup failed in the last 6 hours."
+
+            - alert: VeleroBackupTooOld
+              expr: time() - velero_backup_last_successful_timestamp{schedule!=""} > 7 * 3600
+              for: 15m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Schedule {{ $labels.schedule }} has no successful backup for 7 hours."
+
+            - alert: AzureStorageUnavailable
+              expr: azure_storage_availability_average_percent < 99
+              for: 15m
+              labels:
+                severity: warning
+              annotations:
+                summary: "The backup storage account is less than 99% available."

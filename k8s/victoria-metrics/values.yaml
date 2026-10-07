@@ -25,6 +25,8 @@ vmselect:
     replicationFactor: "2"
     # Drops the duplicate copies read from the two vmstorage pods.
     dedup.minScrapeInterval: 1ms
+    # Grafana lists the vmalert rules through vmselect.
+    vmalert.proxyURL: http://vmalert-victoria-metrics-alert-server.monitoring.svc.cluster.local:8880
   resources:
     requests:
       cpu: 50m
