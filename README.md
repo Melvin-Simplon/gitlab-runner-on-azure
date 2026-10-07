@@ -23,6 +23,9 @@ Production-ready Kubernetes cluster on Azure hosting GitLab CI runners, with a f
 - [AKS Workload Identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview)
 - [azure-metrics-exporter](https://github.com/webdevops/azure-metrics-exporter)
 - [Azure Monitor supported metrics](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-metrics/metrics-index)
+- [VictoriaLogs](https://docs.victoriametrics.com/victorialogs/)
+- [VictoriaLogs collector (vlagent)](https://docs.victoriametrics.com/victorialogs/vlagent/)
+- [VictoriaLogs Grafana plugin](https://docs.victoriametrics.com/victorialogs/integrations/grafana/)
 
 ## Contributing
 

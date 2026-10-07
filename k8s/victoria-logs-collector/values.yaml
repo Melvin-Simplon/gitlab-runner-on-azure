@@ -1,0 +1,17 @@
+# One collector per node reads the logs of every pod, kube-system included.
+
+# Logs are sent to VictoriaLogs.
+remoteWrite:
+  - url: http://victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local:9428
+
+# Metrics read by the vmagent DaemonSet.
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9429"
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
