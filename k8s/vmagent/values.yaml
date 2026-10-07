@@ -66,3 +66,36 @@ config:
         - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
           regex: (.+)
           target_label: job
+
+    # The kubelet of this agent's node: node health and disk use of the volumes.
+    - job_name: kubelet
+      scheme: https
+      # The kubelet certificate is checked with the cluster CA.
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      kubernetes_sd_configs:
+        - role: node
+          # Only read the node this agent runs on.
+          selectors:
+            - role: node
+              field: metadata.name=%{NODE_NAME}
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_node_name]
+          target_label: node
+
+    # cAdvisor inside the kubelet: CPU and memory used by each container.
+    - job_name: cadvisor
+      scheme: https
+      metrics_path: /metrics/cadvisor
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      kubernetes_sd_configs:
+        - role: node
+          selectors:
+            - role: node
+              field: metadata.name=%{NODE_NAME}
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_node_name]
+          target_label: node

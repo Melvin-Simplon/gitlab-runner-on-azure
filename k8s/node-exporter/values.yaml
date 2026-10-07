@@ -1,0 +1,13 @@
+# One node-exporter per node gives the CPU, memory, disk and network of the node.
+
+# Metrics read by the vmagent DaemonSet.
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9100"
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 64Mi

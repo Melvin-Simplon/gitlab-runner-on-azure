@@ -1,0 +1,13 @@
+# kube-state-metrics gives the state of the Kubernetes objects (pods, deployments, nodes...).
+
+# Metrics read by the vmagent DaemonSet.
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
