@@ -23,6 +23,13 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
+  # AKS adds these two rules to every webhook to protect its system namespaces.
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      name: cert-manager-webhook
+      jqPathExpressions:
+        - '.webhooks[].namespaceSelector.matchExpressions[] | select(.key == "control-plane" or .key == "kubernetes.azure.com/managedby")'
   syncPolicy:
     automated:
       prune: true
@@ -30,6 +37,8 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      # ArgoCD keeps the AKS rules above instead of removing them on each sync.
+      - RespectIgnoreDifferences=true
       # The ClusterIssuer type only exists once the cert-manager CRDs are installed in the same sync.
       - SkipDryRunOnMissingResource=true
     # Retry while the cert-manager webhook is still starting.
