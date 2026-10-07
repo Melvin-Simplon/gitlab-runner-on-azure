@@ -44,6 +44,10 @@ grafana.ini:
     root_url: https://gitlab-runner-mpetit.francecentral.cloudapp.azure.com/
 
 # Grafana reads the metrics from vmselect (read path), never from vminsert.
+# Plugin needed to read VictoriaLogs.
+plugins:
+  - victoriametrics-logs-datasource
+
 datasources:
   datasources.yaml:
     apiVersion: 1
@@ -53,6 +57,10 @@ datasources:
         access: proxy
         url: http://vm-victoria-metrics-cluster-vmselect.monitoring.svc.cluster.local:8481/select/0/prometheus
         isDefault: true
+      - name: VictoriaLogs
+        type: victoriametrics-logs-datasource
+        access: proxy
+        url: http://victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local:9428
 
 resources:
   requests:

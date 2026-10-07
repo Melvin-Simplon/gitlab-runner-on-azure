@@ -1,0 +1,22 @@
+# VictoriaLogs stores the logs of every pod.
+
+server:
+  # Logs are kept 7 days.
+  retentionPeriod: 7d
+  # Old logs are deleted before the disk is full.
+  retentionMaxDiskUsagePercent: "80"
+
+  persistentVolume:
+    size: 5Gi
+
+  # Metrics read by the vmagent DaemonSet.
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9428"
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
