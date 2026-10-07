@@ -40,6 +40,23 @@ alertmanager:
       group_by: [alertname, namespace]
     receivers:
       - name: grafana-only
+    # An alert that explains others hides them, so one problem shows once.
+    inhibit_rules:
+      # A node that is down explains the warnings of that node.
+      - source_matchers: [alertname="NodeNotReady"]
+        target_matchers: [severity="warning"]
+        equal: [node]
+      # A certificate that is not ready explains why it may expire.
+      - source_matchers: [alertname="CertificateNotReady"]
+        target_matchers: [alertname="CertificateExpiresSoon"]
+        equal: [exported_namespace, name]
+      # A failed backup explains why the last good one is old.
+      - source_matchers: [alertname="VeleroBackupFailed"]
+        target_matchers: [alertname="VeleroBackupTooOld"]
+        equal: [schedule]
+      # Azure storage that is down explains the Velero alerts.
+      - source_matchers: [alertname="AzureStorageUnavailable"]
+        target_matchers: [alertname=~"VeleroBackupFailed|VeleroBackupTooOld"]
 
   resources:
     requests:

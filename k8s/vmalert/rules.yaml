@@ -116,7 +116,7 @@ server:
               labels:
                 severity: critical
               annotations:
-                summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} is not ready."
+                summary: "Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} is not ready."
 
             # cert-manager should renew it 30 days before the end.
             - alert: CertificateExpiresSoon
@@ -124,7 +124,7 @@ server:
               labels:
                 severity: warning
               annotations:
-                summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in less than 14 days."
+                summary: "Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} expires in less than 14 days."
 
         # The Velero backups and their Azure storage.
         - name: backups
