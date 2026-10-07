@@ -26,6 +26,8 @@ Production-ready Kubernetes cluster on Azure hosting GitLab CI runners, with a f
 - [VictoriaLogs](https://docs.victoriametrics.com/victorialogs/)
 - [VictoriaLogs collector (vlagent)](https://docs.victoriametrics.com/victorialogs/vlagent/)
 - [VictoriaLogs Grafana plugin](https://docs.victoriametrics.com/victorialogs/integrations/grafana/)
+- [vmalert](https://docs.victoriametrics.com/victoriametrics/vmalert/)
+- [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/)
 
 ## Contributing
 

@@ -1,0 +1,49 @@
+# vmalert checks the alert rules, Alertmanager groups the alerts that fire.
+
+server:
+  # vmalert reads the metrics from vmselect.
+  datasource:
+    url: http://vm-victoria-metrics-cluster-vmselect.monitoring.svc.cluster.local:8481/select/0/prometheus
+  # vmalert saves the alert states, so a restart does not forget them.
+  remoteWrite:
+    url: http://vm-victoria-metrics-cluster-vminsert.monitoring.svc.cluster.local:8480/insert/0/prometheus
+  remoteRead:
+    url: http://vm-victoria-metrics-cluster-vmselect.monitoring.svc.cluster.local:8481/select/0/prometheus
+  notifier:
+    alertmanager:
+      url: http://vmalert-victoria-metrics-alert-alertmanager.monitoring.svc.cluster.local:9093
+
+  # Metrics read by the vmagent DaemonSet.
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8880"
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+alertmanager:
+  enabled: true
+
+  # Metrics read by the vmagent DaemonSet.
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9093"
+
+  # No notification for now, the alerts are read in Grafana.
+  config:
+    route:
+      receiver: grafana-only
+      group_by: [alertname, namespace]
+    receivers:
+      - name: grafana-only
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
