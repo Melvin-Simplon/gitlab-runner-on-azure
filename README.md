@@ -1,11 +1,9 @@
 <br/>
+<h1 align="center">GitLab Runners on AKS</h1>
 
 <p align="center">
   <img src="https://skillicons.dev/icons?i=azure,kubernetes,terraform,gitlab,grafana,bash&perline=6" alt="Azure, Kubernetes, Terraform, GitLab, Grafana, Bash" />
 </p>
-
-<h1 align="center">GitLab Runners on AKS</h1>
-
 <p align="center">
   <i>A production-ready Kubernetes cluster that runs GitLab CI jobs, watched by VictoriaMetrics, VictoriaLogs and Grafana, backed up by Velero, and deployed by ArgoCD</i>
 </p>
@@ -14,6 +12,7 @@
 
 <p align="center">
   <a href="https://github.com/WhiteMuush"><img src="https://github.com/WhiteMuush.png" width="56" alt="WhiteMuush" /></a>
+  <a href="https://github.com/ororck"><img src="https://github.com/ororck.png" width="56" alt="ororck" /></a>
 </p>
 
 <br/>
