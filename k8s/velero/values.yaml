@@ -1,0 +1,57 @@
+# Velero saves every Kubernetes resource of the cluster into Azure Blob Storage.
+
+# The Azure plugin is copied into Velero before it starts.
+initContainers:
+  - name: velero-plugin-for-microsoft-azure
+    image: velero/velero-plugin-for-microsoft-azure:v1.14.4
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+
+# This label asks AKS to give the pod its Azure identity token.
+podLabels:
+  azure.workload.identity/use: "true"
+
+# Service account and Secret come from the bootstrap Terraform stack, because they hold Azure ids.
+serviceAccount:
+  server:
+    create: false
+    name: velero
+credentials:
+  useSecret: true
+  existingSecret: velero-azure
+
+configuration:
+  backupStorageLocation:
+    - name: default
+      provider: azure
+      bucket: velero
+      default: true
+      config:
+        resourceGroup: mpetitRG
+        storageAccount: stmpetitvelero
+        # Log in with the Entra identity, the storage account has no keys.
+        useAAD: "true"
+
+# Only the Kubernetes resources are saved, not the disk contents.
+snapshotsEnabled: false
+deployNodeAgent: false
+
+# ArgoCD already applies the CRDs of the chart.
+upgradeCRDs: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
+
+# A full backup every 6 hours, kept for 7 days.
+schedules:
+  every-6h:
+    schedule: "0 */6 * * *"
+    template:
+      ttl: 168h
+      storageLocation: default
+      snapshotVolumes: false

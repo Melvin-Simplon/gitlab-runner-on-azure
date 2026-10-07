@@ -28,3 +28,41 @@ resource "helm_release" "root_app" {
 
   depends_on = [helm_release.argocd]
 }
+
+# Identity of the infra stack, read here because its id changes with each new cluster.
+data "azurerm_user_assigned_identity" "velero" {
+  name                = "id-velero"
+  resource_group_name = var.resource_group_name
+}
+
+resource "kubernetes_namespace_v1" "velero" {
+  metadata {
+    name = "velero"
+  }
+}
+
+# Velero runs with this service account, linked here to its Azure identity.
+resource "kubernetes_service_account_v1" "velero" {
+  metadata {
+    name      = "velero"
+    namespace = kubernetes_namespace_v1.velero.metadata[0].name
+    annotations = {
+      "azure.workload.identity/client-id" = data.azurerm_user_assigned_identity.velero.client_id
+    }
+  }
+}
+
+# Azure ids for the Velero plugin, with no password inside.
+resource "kubernetes_secret_v1" "velero_azure" {
+  metadata {
+    name      = "velero-azure"
+    namespace = kubernetes_namespace_v1.velero.metadata[0].name
+  }
+  data = {
+    cloud = <<-EOT
+      AZURE_SUBSCRIPTION_ID=${var.subscription_id}
+      AZURE_RESOURCE_GROUP=${var.resource_group_name}
+      AZURE_CLOUD_NAME=AzurePublicCloud
+    EOT
+  }
+}

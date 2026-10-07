@@ -12,6 +12,8 @@ GITLAB_PROJECT    ?= WhiteMuush/gitlab-runner-on-azure
 # Numeric id, so the Terraform state address needs no URL-encoded project path.
 GITLAB_PROJECT_ID ?= 87248404
 DOMAIN            ?= gitlab-runner-mpetit.francecentral.cloudapp.azure.com
+# Storage account of the Velero backups, its name must be unique in all of Azure.
+BACKUP_STORAGE_ACCOUNT ?= stmpetitvelero
 LOG_FILE          ?= .logs/pipeline.log
 
 export AZ_SUBSCRIPTION_ID AZ_RESOURCE_GROUP AZ_LOCATION CLUSTER_NAME CLUSTER_ADMINS
@@ -21,6 +23,7 @@ export DOMAIN GITLAB_PROJECT GITLAB_PROJECT_ID GITLAB_USER GITLAB_TOKEN GITLAB_R
 export TF_VAR_subscription_id     = $(AZ_SUBSCRIPTION_ID)
 export TF_VAR_resource_group_name = $(AZ_RESOURCE_GROUP)
 export TF_VAR_cluster_name        = $(CLUSTER_NAME)
+export TF_VAR_backup_storage_account = $(BACKUP_STORAGE_ACCOUNT)
 
 include makefiles/setup.mk
 include makefiles/infra.mk

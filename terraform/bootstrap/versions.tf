@@ -10,6 +10,10 @@ terraform {
       source  = "hashicorp/helm"
       version = "~> 3.3"
     }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 3.3"
+    }
   }
 
   # GitLab-managed state, address and credentials set by scripts/tf.sh (TF_HTTP_* variables).
@@ -37,5 +41,15 @@ provider "helm" {
       command     = "kubelogin"
       args        = ["get-token", "--login", "azurecli", "--server-id", local.aks_server_id]
     }
+  }
+}
+
+provider "kubernetes" {
+  host                   = data.azurerm_kubernetes_cluster.this.kube_config[0].host
+  cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.this.kube_config[0].cluster_ca_certificate)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "kubelogin"
+    args        = ["get-token", "--login", "azurecli", "--server-id", local.aks_server_id]
   }
 }
