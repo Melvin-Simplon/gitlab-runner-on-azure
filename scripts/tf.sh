@@ -7,7 +7,7 @@ source "$(dirname "$0")/lib.sh"
 require_env AZ_SUBSCRIPTION_ID AZ_RESOURCE_GROUP CLUSTER_NAME GITLAB_PROJECT_ID
 require_cmd az terraform
 
-[[ $# -eq 2 ]] || die "usage: tf.sh <infra|bootstrap> <plan|apply|destroy>"
+[[ $# -eq 2 ]] || die "usage: tf.sh <backup|infra|bootstrap> <plan|apply|destroy>"
 readonly STACK=$1 ACTION=$2
 readonly DIR="terraform/${STACK}"
 readonly PLAN_FILE="tfplan"
@@ -28,6 +28,20 @@ check_cluster() {
             return 1 ;;
         *) die "cluster ${CLUSTER_NAME} is in a transient state (${state}), retry later" ;;
     esac
+}
+
+# Keeps the backups unless someone types y, even with CONFIRM=yes.
+check_backup_destroy() {
+    [[ "${STACK}" == "backup" && "${ACTION}" == "destroy" ]] || return 0
+    local answer=""
+    if [[ -t 0 ]]; then
+        read -r -p "Also delete every Velero backup? [y/N] " answer
+    fi
+    if [[ "${answer}" == [yY] ]]; then
+        return 0
+    fi
+    skipped "${STACK}" "backups kept"
+    return 1
 }
 
 # Points Terraform to the GitLab state without saving the token in .terraform/.
@@ -86,7 +100,7 @@ main() {
     recap_keys ok changed skipped
     trap 'rm -f "${DIR}/${PLAN_FILE}"' EXIT
     set_backend_env
-    if check_cluster; then
+    if check_cluster && check_backup_destroy; then
         tf_init
         local rc=0
         tf_plan || rc=$?

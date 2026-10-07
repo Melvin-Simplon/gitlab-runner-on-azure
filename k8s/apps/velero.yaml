@@ -1,0 +1,34 @@
+# Official chart from vmware-tanzu.github.io, values from this repository.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: velero
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://vmware-tanzu.github.io/helm-charts
+      chart: velero
+      targetRevision: 12.2.0
+      helm:
+        releaseName: velero
+        valueFiles:
+          - $values/k8s/velero/values.yaml
+    - repoURL: https://gitlab.com/WhiteMuush/gitlab-runner-on-azure.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: velero
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      # The velero namespace is created by the bootstrap Terraform stack.
+      - CreateNamespace=false
+      - ServerSideApply=true
+      # The Schedule type only exists once the Velero CRDs are installed in the same sync.
+      - SkipDryRunOnMissingResource=true

@@ -25,3 +25,7 @@ variable "node_count" {
   type    = number
   default = 2
 }
+
+variable "backup_storage_account" {
+  type = string
+}

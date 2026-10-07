@@ -58,3 +58,33 @@ resource "azurerm_kubernetes_cluster" "this" {
 
   tags = local.tags
 }
+
+# Storage account of the backup stack, which must be applied first.
+data "azurerm_storage_account" "velero" {
+  name                = var.backup_storage_account
+  resource_group_name = data.azurerm_resource_group.this.name
+}
+
+# Azure identity that Velero borrows, without any secret.
+resource "azurerm_user_assigned_identity" "velero" {
+  name                = "id-velero"
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
+  tags                = local.tags
+}
+
+# Velero may only read and write blobs in the backup storage account.
+resource "azurerm_role_assignment" "velero_storage" {
+  scope                = data.azurerm_storage_account.velero.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_user_assigned_identity.velero.principal_id
+}
+
+# Only the velero service account of the velero namespace may use this identity.
+resource "azurerm_federated_identity_credential" "velero" {
+  name                      = "velero"
+  user_assigned_identity_id = azurerm_user_assigned_identity.velero.id
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azurerm_kubernetes_cluster.this.oidc_issuer_url
+  subject                   = "system:serviceaccount:velero:velero"
+}
