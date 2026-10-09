@@ -1,0 +1,60 @@
+# Pipeline used only to test the runner on AKS, in about 30 seconds.
+
+# It runs only when someone starts it by hand, never on a push.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "api"
+
+# The runner takes 2 jobs at a time, so the 4 jobs run in 2 waves.
+stages:
+  - build
+  - verify
+
+default:
+  # The runner only takes jobs that carry one of its tags.
+  tags: [linux]
+
+# Builds a 20 MB file and sends it to GitLab as an artifact.
+build-artifact:
+  stage: build
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - dd if=/dev/urandom of=payload.bin bs=1M count=20
+    - gzip payload.bin
+    - sha256sum payload.bin.gz > payload.sha256
+  artifacts:
+    paths:
+      - payload.bin.gz
+      - payload.sha256
+    expire_in: 1 day
+
+# Shows where the job runs, then loads the CPU and 700 MB of memory for 5 seconds.
+stress-cpu-memory:
+  stage: build
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - echo "Runner $CI_RUNNER_DESCRIPTION, pod $(hostname), $(nproc) CPUs"
+    - apk add --no-cache -q stress-ng
+    - stress-ng --cpu 1 --vm 1 --vm-bytes 700M --timeout 5s --metrics-brief
+
+# Writes on the node disk and downloads 100 MB, both for about 5 seconds.
+stress-disk-network:
+  stage: verify
+  needs: []
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - apk add --no-cache -q stress-ng
+    - stress-ng --hdd 1 --hdd-bytes 256M --timeout 5s --metrics-brief
+    - time sh -c 'wget -q -O - https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/x86_64/alpine-standard-3.22.6-x86_64.iso | head -c 104857600 > /dev/null'
+
+# Gets the artifact back from GitLab and checks that it did not change.
+verify-artifact:
+  stage: verify
+  needs: [build-artifact]
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - sha256sum -c payload.sha256
