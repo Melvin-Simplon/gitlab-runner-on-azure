@@ -56,8 +56,8 @@ All objectives are measured over a **rolling window of 30 days**. VictoriaMetric
 
 ## How it is built
 
-1. **Synthetic traffic.** The [test-runner](https://gitlab.com/WhiteMuush/test-runner) project runs a pipeline of 2 jobs every 15 minutes, Monday to Friday, from 8:00 to 18:00 (Paris time). Without it, there would be too few jobs, and one slow job would move an SLO by several points.
-2. **Recording rules.** vmalert computes the error ratio of each SLO over 7 windows (5m, 30m, 1h, 6h, 1d, 3d, 30d), every minute, as `slo:sli_error:ratio_rate<window>{slo="..."}`. The rules are in `k8s/vmalert/rules.yaml`.
+1. **Synthetic traffic.** The [test-runner](https://gitlab.com/WhiteMuush/test-runner) project runs a pipeline of 2 jobs every hour, Monday to Friday, from 8:00 to 17:00 (Paris time). That is about 440 jobs over 30 days. Without it, there would be too few jobs, and one slow job would move an SLO by several points. GitLab.com Free allows 24 runs per schedule and per day, so one run per hour is the most a schedule can do.
+2. **Recording rules.** vmalert computes the error ratio of each SLO over 8 windows (5m, 30m, 1h, 2h, 6h, 1d, 3d, 30d), every minute, as `slo:sli_error:ratio_rate<window>{slo="..."}`. The rules are in `k8s/vmalert/rules.yaml`.
 3. **Dashboard.** The **Runner SLO** dashboard in Grafana, folder Platform, reads the recording rules. It shows the SLI over 30 days, the error budget left, the burn rate, and the SLI of the last day.
 4. **Alerts.** The burn rate alerts below read the same recording rules.
 
@@ -72,10 +72,10 @@ Each alert checks a long window and a short window. The long one proves the prob
 | `runner-reachable`, `runner-api` | critical | 14.4 | 1h | 5m | 2 % in 1 hour |
 | `runner-reachable`, `runner-api` | critical | 6 | 6h | 30m | 5 % in 6 hours |
 | `runner-reachable`, `runner-api` | warning | 1 | 3d | 6h | 10 % in 3 days |
-| `runner-jobs-success`, `runner-jobs-start` | critical | 6 | 6h | 1h | 5 % in 6 hours |
+| `runner-jobs-success`, `runner-jobs-start` | critical | 3 | 1d | 2h | 10 % in 1 day |
 | `runner-jobs-success`, `runner-jobs-start` | warning | 1 | 3d | 6h | 10 % in 3 days |
 
-The two job SLOs have no 5 minute window: with one pipeline every 15 minutes, a 5 minute window is often empty.
+The two job SLOs use longer windows: with one pipeline per hour, a 5 minute or 1 hour window is often empty, and an alert on an empty window never fires.
 
 The alerts show in Grafana, menu **Alerting**, and with `make alerts`. They do not send mails or messages yet.
 

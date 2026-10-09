@@ -161,7 +161,7 @@ To change something in the cluster, change the file, open a merge request and me
 
 Each objective shows its SLI, the error budget left, and the burn rate. The dashboard comes from `k8s/grafana/dashboards/slo.json` on `main`, so Grafana needs a restart to load a new version.
 
-**Alerts**: 23 alert rules in `k8s/vmalert/rules.yaml`, on the nodes, the pods, the platform, the backups and the runner SLOs, plus 29 recording rules that compute the SLOs. They show in Grafana, menu **Alerting**. When one problem fires several alerts, Alertmanager hides the consequences and keeps the cause.
+**Alerts**: 23 alert rules in `k8s/vmalert/rules.yaml`, on the nodes, the pods, the platform, the backups and the runner SLOs, plus 33 recording rules that compute the SLOs. They show in Grafana, menu **Alerting**. When one problem fires several alerts, Alertmanager hides the consequences and keeps the cause.
 
 ## Backups
 
