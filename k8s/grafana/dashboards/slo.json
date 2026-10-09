@@ -1,14 +1,14 @@
 {
   "uid": "slo",
   "title": "Runner SLO",
-  "description": "Do we have working runners, all the time? Measured over 14 days because VictoriaMetrics keeps 15 days.",
+  "description": "Do we have working runners, all the time? SLOs over 30 days, read from the vmalert recording rules.",
   "tags": [
     "slo"
   ],
   "editable": true,
   "schemaVersion": 39,
   "time": {
-    "from": "now-14d",
+    "from": "now-30d",
     "to": "now"
   },
   "refresh": "5m",
@@ -16,6 +16,21 @@
   "panels": [
     {
       "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Do we have working runners, all the time?** Each objective is measured over the last 30 days. Definitions, alerts and the error budget policy are in [docs/slo.md](https://gitlab.com/WhiteMuush/gitlab-runner-on-azure/-/blob/main/docs/slo.md)."
+      }
+    },
+    {
+      "id": 2,
       "type": "row",
       "title": "Runner is reachable (objective 99%)",
       "collapsed": false,
@@ -23,15 +38,15 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "panels": []
     },
     {
-      "id": 2,
+      "id": 3,
       "type": "stat",
-      "title": "SLI over 14d",
-      "description": "Share of scrapes where the runner answered its sidecar vmagent.",
+      "title": "SLI over 30 days",
+      "description": "Share of minutes where the runner answered, while the cluster runs.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -40,7 +55,7 @@
         "h": 6,
         "w": 5,
         "x": 0,
-        "y": 1
+        "y": 4
       },
       "targets": [
         {
@@ -48,7 +63,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "sum(sum_over_time(up{job=\"gitlab-runner\"}[14d])) / sum(count_over_time(up{job=\"gitlab-runner\"}[14d]))",
+          "expr": "1 - slo:sli_error:ratio_rate30d{slo=\"runner-reachable\"}",
           "refId": "A",
           "instant": true,
           "range": false
@@ -81,71 +96,6 @@
               {
                 "color": "green",
                 "value": 0.99
-              }
-            ]
-          }
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 3,
-      "type": "stat",
-      "title": "Error budget left",
-      "description": "Part of the allowed errors not used yet. Below 0, the objective is missed.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 5,
-        "x": 5,
-        "y": 1
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "1 - (1 - (sum(sum_over_time(up{job=\"gitlab-runner\"}[14d])) / sum(count_over_time(up{job=\"gitlab-runner\"}[14d])))) / 0.01",
-          "refId": "A",
-          "instant": true,
-          "range": false
-        }
-      ],
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "decimals": 1,
-          "noValue": "No data",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 0
-              },
-              {
-                "color": "green",
-                "value": 0.25
               }
             ]
           }
@@ -156,8 +106,73 @@
     {
       "id": 4,
       "type": "stat",
+      "title": "Error budget left",
+      "description": "Part of the allowed errors not used yet. Below 0, the objective is missed.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 5,
+        "y": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "1 - slo:sli_error:ratio_rate30d{slo=\"runner-reachable\"} / 0.01",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "noValue": "No data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 0.25
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
       "title": "Burn rate over 1h",
-      "description": "How fast the budget goes. 1 uses it exactly in 14d, 14.4 is the alert level.",
+      "description": "How fast the budget goes. 1 uses it exactly in 30 days, 6 and above pages.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -166,7 +181,7 @@
         "h": 6,
         "w": 5,
         "x": 10,
-        "y": 1
+        "y": 4
       },
       "targets": [
         {
@@ -174,7 +189,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "(1 - (sum(sum_over_time(up{job=\"gitlab-runner\"}[1h])) / sum(count_over_time(up{job=\"gitlab-runner\"}[1h])))) / 0.01",
+          "expr": "slo:sli_error:ratio_rate1h{slo=\"runner-reachable\"} / 0.01",
           "refId": "A",
           "instant": true,
           "range": false
@@ -210,7 +225,7 @@
               },
               {
                 "color": "red",
-                "value": 14.4
+                "value": 6
               }
             ]
           }
@@ -219,10 +234,10 @@
       }
     },
     {
-      "id": 5,
+      "id": 6,
       "type": "timeseries",
-      "title": "SLI over the last 1h, rolling",
-      "description": "Each point is the SLI of the 1h before it. The dashed line is the objective.",
+      "title": "SLI over the last day, rolling",
+      "description": "Each point is the SLI of the day before it. The dashed line is the objective.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -231,7 +246,7 @@
         "h": 6,
         "w": 9,
         "x": 15,
-        "y": 1
+        "y": 4
       },
       "targets": [
         {
@@ -239,7 +254,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "sum(sum_over_time(up{job=\"gitlab-runner\"}[1h])) / sum(count_over_time(up{job=\"gitlab-runner\"}[1h]))",
+          "expr": "1 - slo:sli_error:ratio_rate1d{slo=\"runner-reachable\"}",
           "refId": "A",
           "legendFormat": "SLI"
         }
@@ -281,7 +296,7 @@
       }
     },
     {
-      "id": 6,
+      "id": 7,
       "type": "row",
       "title": "Runner talks to GitLab (objective 99%)",
       "collapsed": false,
@@ -289,14 +304,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 10
       },
       "panels": []
     },
     {
-      "id": 7,
+      "id": 8,
       "type": "stat",
-      "title": "SLI over 14d",
+      "title": "SLI over 30 days",
       "description": "Share of runner calls to the GitLab API that did not get a 5xx error.",
       "datasource": {
         "type": "prometheus",
@@ -306,7 +321,7 @@
         "h": 6,
         "w": 5,
         "x": 0,
-        "y": 8
+        "y": 11
       },
       "targets": [
         {
@@ -314,7 +329,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "1 - (sum(increase(gitlab_runner_api_request_statuses_total{status=~\"5..\"}[14d])) or vector(0)) / sum(increase(gitlab_runner_api_request_statuses_total[14d]))",
+          "expr": "1 - slo:sli_error:ratio_rate30d{slo=\"runner-api\"}",
           "refId": "A",
           "instant": true,
           "range": false
@@ -347,71 +362,6 @@
               {
                 "color": "green",
                 "value": 0.99
-              }
-            ]
-          }
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 8,
-      "type": "stat",
-      "title": "Error budget left",
-      "description": "Part of the allowed errors not used yet. Below 0, the objective is missed.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 5,
-        "x": 5,
-        "y": 8
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "1 - (1 - (1 - (sum(increase(gitlab_runner_api_request_statuses_total{status=~\"5..\"}[14d])) or vector(0)) / sum(increase(gitlab_runner_api_request_statuses_total[14d])))) / 0.01",
-          "refId": "A",
-          "instant": true,
-          "range": false
-        }
-      ],
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "decimals": 1,
-          "noValue": "No data",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 0
-              },
-              {
-                "color": "green",
-                "value": 0.25
               }
             ]
           }
@@ -422,207 +372,6 @@
     {
       "id": 9,
       "type": "stat",
-      "title": "Burn rate over 1h",
-      "description": "How fast the budget goes. 1 uses it exactly in 14d, 14.4 is the alert level.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 5,
-        "x": 10,
-        "y": 8
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "(1 - (1 - (sum(increase(gitlab_runner_api_request_statuses_total{status=~\"5..\"}[1h])) or vector(0)) / sum(increase(gitlab_runner_api_request_statuses_total[1h])))) / 0.01",
-          "refId": "A",
-          "instant": true,
-          "range": false
-        }
-      ],
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "decimals": 2,
-          "noValue": "No data",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 14.4
-              }
-            ]
-          }
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 10,
-      "type": "timeseries",
-      "title": "SLI over the last 1h, rolling",
-      "description": "Each point is the SLI of the 1h before it. The dashed line is the objective.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 9,
-        "x": 15,
-        "y": 8
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "1 - (sum(increase(gitlab_runner_api_request_statuses_total{status=~\"5..\"}[1h])) or vector(0)) / sum(increase(gitlab_runner_api_request_statuses_total[1h]))",
-          "refId": "A",
-          "legendFormat": "SLI"
-        }
-      ],
-      "options": {
-        "legend": {
-          "showLegend": false
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "decimals": 2,
-          "max": 1,
-          "custom": {
-            "thresholdsStyle": {
-              "mode": "dashed"
-            },
-            "spanNulls": false
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 0.99
-              }
-            ]
-          }
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 11,
-      "type": "row",
-      "title": "Jobs are not broken by the runner (objective 99%)",
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 14
-      },
-      "panels": []
-    },
-    {
-      "id": 12,
-      "type": "stat",
-      "title": "SLI over 14d",
-      "description": "Share of jobs that did not fail because of the runner. A failing script or a canceled job does not count.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 5,
-        "x": 0,
-        "y": 15
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "1 - (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~\"script_failure|job_canceled\"}[14d])) or vector(0)) / sum(increase(gitlab_runner_jobs_total[14d]))",
-          "refId": "A",
-          "instant": true,
-          "range": false
-        }
-      ],
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "decimals": 3,
-          "noValue": "No data",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 0.99
-              }
-            ]
-          }
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 13,
-      "type": "stat",
       "title": "Error budget left",
       "description": "Part of the allowed errors not used yet. Below 0, the objective is missed.",
       "datasource": {
@@ -633,7 +382,7 @@
         "h": 6,
         "w": 5,
         "x": 5,
-        "y": 15
+        "y": 11
       },
       "targets": [
         {
@@ -641,7 +390,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "1 - (1 - (1 - (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~\"script_failure|job_canceled\"}[14d])) or vector(0)) / sum(increase(gitlab_runner_jobs_total[14d])))) / 0.01",
+          "expr": "1 - slo:sli_error:ratio_rate30d{slo=\"runner-api\"} / 0.01",
           "refId": "A",
           "instant": true,
           "range": false
@@ -686,10 +435,10 @@
       }
     },
     {
-      "id": 14,
+      "id": 10,
       "type": "stat",
-      "title": "Burn rate over 1d",
-      "description": "How fast the budget goes. 1 uses it exactly in 14d, 14.4 is the alert level.",
+      "title": "Burn rate over 1h",
+      "description": "How fast the budget goes. 1 uses it exactly in 30 days, 6 and above pages.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -698,7 +447,7 @@
         "h": 6,
         "w": 5,
         "x": 10,
-        "y": 15
+        "y": 11
       },
       "targets": [
         {
@@ -706,7 +455,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "(1 - (1 - (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~\"script_failure|job_canceled\"}[1d])) or vector(0)) / sum(increase(gitlab_runner_jobs_total[1d])))) / 0.01",
+          "expr": "slo:sli_error:ratio_rate1h{slo=\"runner-api\"} / 0.01",
           "refId": "A",
           "instant": true,
           "range": false
@@ -742,7 +491,7 @@
               },
               {
                 "color": "red",
-                "value": 14.4
+                "value": 6
               }
             ]
           }
@@ -751,10 +500,10 @@
       }
     },
     {
-      "id": 15,
+      "id": 11,
       "type": "timeseries",
-      "title": "SLI over the last 1d, rolling",
-      "description": "Each point is the SLI of the 1d before it. The dashed line is the objective.",
+      "title": "SLI over the last day, rolling",
+      "description": "Each point is the SLI of the day before it. The dashed line is the objective.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -763,7 +512,7 @@
         "h": 6,
         "w": 9,
         "x": 15,
-        "y": 15
+        "y": 11
       },
       "targets": [
         {
@@ -771,7 +520,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "1 - (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~\"script_failure|job_canceled\"}[1d])) or vector(0)) / sum(increase(gitlab_runner_jobs_total[1d]))",
+          "expr": "1 - slo:sli_error:ratio_rate1d{slo=\"runner-api\"}",
           "refId": "A",
           "legendFormat": "SLI"
         }
@@ -813,7 +562,273 @@
       }
     },
     {
+      "id": 12,
+      "type": "row",
+      "title": "Jobs are not broken by the runner (objective 99%)",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "panels": []
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "SLI over 30 days",
+      "description": "Share of jobs that did not fail because of the runner. A failing script or a canceled job does not count.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 0,
+        "y": 18
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "1 - slo:sli_error:ratio_rate30d{slo=\"runner-jobs-success\"}",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 3,
+          "noValue": "No data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0.99
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "Error budget left",
+      "description": "Part of the allowed errors not used yet. Below 0, the objective is missed.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 5,
+        "y": 18
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "1 - slo:sli_error:ratio_rate30d{slo=\"runner-jobs-success\"} / 0.01",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "noValue": "No data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 0.25
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 15,
+      "type": "stat",
+      "title": "Burn rate over 6h",
+      "description": "How fast the budget goes. 1 uses it exactly in 30 days, 6 and above pages.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 10,
+        "y": 18
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "slo:sli_error:ratio_rate6h{slo=\"runner-jobs-success\"} / 0.01",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 2,
+          "noValue": "No data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 6
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
       "id": 16,
+      "type": "timeseries",
+      "title": "SLI over the last day, rolling",
+      "description": "Each point is the SLI of the day before it. The dashed line is the objective.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 9,
+        "x": 15,
+        "y": 18
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "1 - slo:sli_error:ratio_rate1d{slo=\"runner-jobs-success\"}",
+          "refId": "A",
+          "legendFormat": "SLI"
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 2,
+          "max": 1,
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "dashed"
+            },
+            "spanNulls": false
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0.99
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 17,
       "type": "row",
       "title": "Jobs start within 60 seconds (objective 95%)",
       "collapsed": false,
@@ -821,14 +836,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 24
       },
       "panels": []
     },
     {
-      "id": 17,
+      "id": 18,
       "type": "stat",
-      "title": "SLI over 14d",
+      "title": "SLI over 30 days",
       "description": "Share of jobs that waited less than 60 seconds before a runner took them.",
       "datasource": {
         "type": "prometheus",
@@ -838,7 +853,7 @@
         "h": 6,
         "w": 5,
         "x": 0,
-        "y": 22
+        "y": 25
       },
       "targets": [
         {
@@ -846,7 +861,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le=\"60\"}[14d])) / sum(increase(gitlab_runner_job_queue_duration_seconds_count[14d]))",
+          "expr": "1 - slo:sli_error:ratio_rate30d{slo=\"runner-jobs-start\"}",
           "refId": "A",
           "instant": true,
           "range": false
@@ -887,7 +902,7 @@
       }
     },
     {
-      "id": 18,
+      "id": 19,
       "type": "stat",
       "title": "Error budget left",
       "description": "Part of the allowed errors not used yet. Below 0, the objective is missed.",
@@ -899,7 +914,7 @@
         "h": 6,
         "w": 5,
         "x": 5,
-        "y": 22
+        "y": 25
       },
       "targets": [
         {
@@ -907,7 +922,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "1 - (1 - (sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le=\"60\"}[14d])) / sum(increase(gitlab_runner_job_queue_duration_seconds_count[14d])))) / 0.05",
+          "expr": "1 - slo:sli_error:ratio_rate30d{slo=\"runner-jobs-start\"} / 0.05",
           "refId": "A",
           "instant": true,
           "range": false
@@ -952,10 +967,10 @@
       }
     },
     {
-      "id": 19,
+      "id": 20,
       "type": "stat",
-      "title": "Burn rate over 1d",
-      "description": "How fast the budget goes. 1 uses it exactly in 14d, 14.4 is the alert level.",
+      "title": "Burn rate over 6h",
+      "description": "How fast the budget goes. 1 uses it exactly in 30 days, 6 and above pages.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -964,7 +979,7 @@
         "h": 6,
         "w": 5,
         "x": 10,
-        "y": 22
+        "y": 25
       },
       "targets": [
         {
@@ -972,7 +987,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "(1 - (sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le=\"60\"}[1d])) / sum(increase(gitlab_runner_job_queue_duration_seconds_count[1d])))) / 0.05",
+          "expr": "slo:sli_error:ratio_rate6h{slo=\"runner-jobs-start\"} / 0.05",
           "refId": "A",
           "instant": true,
           "range": false
@@ -1008,7 +1023,7 @@
               },
               {
                 "color": "red",
-                "value": 14.4
+                "value": 6
               }
             ]
           }
@@ -1017,10 +1032,10 @@
       }
     },
     {
-      "id": 20,
+      "id": 21,
       "type": "timeseries",
-      "title": "SLI over the last 1d, rolling",
-      "description": "Each point is the SLI of the 1d before it. The dashed line is the objective.",
+      "title": "SLI over the last day, rolling",
+      "description": "Each point is the SLI of the day before it. The dashed line is the objective.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -1029,7 +1044,7 @@
         "h": 6,
         "w": 9,
         "x": 15,
-        "y": 22
+        "y": 25
       },
       "targets": [
         {
@@ -1037,7 +1052,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le=\"60\"}[1d])) / sum(increase(gitlab_runner_job_queue_duration_seconds_count[1d]))",
+          "expr": "1 - slo:sli_error:ratio_rate1d{slo=\"runner-jobs-start\"}",
           "refId": "A",
           "legendFormat": "SLI"
         }

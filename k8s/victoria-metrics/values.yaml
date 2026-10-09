@@ -39,7 +39,8 @@ vmstorage:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8482"
   replicaCount: 2
-  retentionPeriod: 15d
+  # 30 days for the SLO window, plus a margin.
+  retentionPeriod: 35d
   persistentVolume:
     enabled: true
     size: 8Gi
