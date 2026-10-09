@@ -9,6 +9,13 @@ podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/port: "3000"
 
+# Grafana needs a few seconds to open its port, so the first check waits.
+readinessProbe:
+  httpGet:
+    path: /api/health
+    port: grafana
+  initialDelaySeconds: 10
+
 # Helm test pod, useless here.
 testFramework:
   enabled: false
