@@ -174,9 +174,13 @@ dashboards:
       datasource:
         - name: DS_PROMETHEUS
           value: victoriametrics
+    # Not 11001, its datasource variable points to a missing "k8s-qa" datasource.
     cert-manager:
-      gnetId: 11001
+      gnetId: 20340
       revision: 1
+      datasource:
+        - name: DS_PROMETHEUS
+          value: victoriametrics
     velero:
       gnetId: 16829
       revision: 5
