@@ -191,7 +191,7 @@ scripts/            the scripts behind each target
 terraform/          backup, infra and bootstrap stacks
 k8s/apps/           one ArgoCD app per component
 k8s/<component>/    the Helm values of each component
-docs/               project brief
+docs/               project brief, presentation summary
 ```
 
 ## Contributing
@@ -207,6 +207,7 @@ Direct pushes and force pushes to `main` are blocked.
 ## Documentation
 
 - [Project brief](docs/consignes.md)
+- [Presentation summary](docs/presentation.md)
 - [ArgoCD](https://argo-cd.readthedocs.io/)
 - [AKS Workload Identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview)
 - [GitLab Runner Helm chart](https://docs.gitlab.com/runner/install/kubernetes/)
