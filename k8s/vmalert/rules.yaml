@@ -154,3 +154,308 @@ server:
                 severity: warning
               annotations:
                 summary: "The backup storage account is less than 99% available."
+
+        # SLO error ratios of the runner, see docs/slo.md.
+        - name: slo-runner-sli
+          interval: 1m
+          rules:
+            # 1 when the runner answers, 0 when it does not or has no data while the cluster runs.
+            - record: slo:runner_up:max
+              expr: max(up{job="gitlab-runner"}) or vector(0)
+
+            # Share of minutes where the runner did not answer.
+            - record: slo:sli_error:ratio_rate5m
+              expr: |
+                1 - avg_over_time(slo:runner_up:max[5m])
+              labels:
+                slo: runner-reachable
+            - record: slo:sli_error:ratio_rate30m
+              expr: |
+                1 - avg_over_time(slo:runner_up:max[30m])
+              labels:
+                slo: runner-reachable
+            - record: slo:sli_error:ratio_rate1h
+              expr: |
+                1 - avg_over_time(slo:runner_up:max[1h])
+              labels:
+                slo: runner-reachable
+            - record: slo:sli_error:ratio_rate6h
+              expr: |
+                1 - avg_over_time(slo:runner_up:max[6h])
+              labels:
+                slo: runner-reachable
+            - record: slo:sli_error:ratio_rate1d
+              expr: |
+                1 - avg_over_time(slo:runner_up:max[1d])
+              labels:
+                slo: runner-reachable
+            - record: slo:sli_error:ratio_rate3d
+              expr: |
+                1 - avg_over_time(slo:runner_up:max[3d])
+              labels:
+                slo: runner-reachable
+            - record: slo:sli_error:ratio_rate30d
+              expr: |
+                1 - avg_over_time(slo:runner_up:max[30d])
+              labels:
+                slo: runner-reachable
+
+            # Share of runner calls to the GitLab API that got a 5xx error.
+            - record: slo:sli_error:ratio_rate5m
+              expr: |
+                (sum(increase(gitlab_runner_api_request_statuses_total{status=~"5.."}[5m])) or vector(0))
+                  / sum(increase(gitlab_runner_api_request_statuses_total[5m]))
+              labels:
+                slo: runner-api
+            - record: slo:sli_error:ratio_rate30m
+              expr: |
+                (sum(increase(gitlab_runner_api_request_statuses_total{status=~"5.."}[30m])) or vector(0))
+                  / sum(increase(gitlab_runner_api_request_statuses_total[30m]))
+              labels:
+                slo: runner-api
+            - record: slo:sli_error:ratio_rate1h
+              expr: |
+                (sum(increase(gitlab_runner_api_request_statuses_total{status=~"5.."}[1h])) or vector(0))
+                  / sum(increase(gitlab_runner_api_request_statuses_total[1h]))
+              labels:
+                slo: runner-api
+            - record: slo:sli_error:ratio_rate6h
+              expr: |
+                (sum(increase(gitlab_runner_api_request_statuses_total{status=~"5.."}[6h])) or vector(0))
+                  / sum(increase(gitlab_runner_api_request_statuses_total[6h]))
+              labels:
+                slo: runner-api
+            - record: slo:sli_error:ratio_rate1d
+              expr: |
+                (sum(increase(gitlab_runner_api_request_statuses_total{status=~"5.."}[1d])) or vector(0))
+                  / sum(increase(gitlab_runner_api_request_statuses_total[1d]))
+              labels:
+                slo: runner-api
+            - record: slo:sli_error:ratio_rate3d
+              expr: |
+                (sum(increase(gitlab_runner_api_request_statuses_total{status=~"5.."}[3d])) or vector(0))
+                  / sum(increase(gitlab_runner_api_request_statuses_total[3d]))
+              labels:
+                slo: runner-api
+            - record: slo:sli_error:ratio_rate30d
+              expr: |
+                (sum(increase(gitlab_runner_api_request_statuses_total{status=~"5.."}[30d])) or vector(0))
+                  / sum(increase(gitlab_runner_api_request_statuses_total[30d]))
+              labels:
+                slo: runner-api
+
+            # Share of jobs that failed because of the runner.
+            - record: slo:sli_error:ratio_rate5m
+              expr: |
+                (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~"script_failure|job_canceled"}[5m])) or vector(0))
+                  / sum(increase(gitlab_runner_jobs_total[5m]))
+              labels:
+                slo: runner-jobs-success
+            - record: slo:sli_error:ratio_rate30m
+              expr: |
+                (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~"script_failure|job_canceled"}[30m])) or vector(0))
+                  / sum(increase(gitlab_runner_jobs_total[30m]))
+              labels:
+                slo: runner-jobs-success
+            - record: slo:sli_error:ratio_rate1h
+              expr: |
+                (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~"script_failure|job_canceled"}[1h])) or vector(0))
+                  / sum(increase(gitlab_runner_jobs_total[1h]))
+              labels:
+                slo: runner-jobs-success
+            - record: slo:sli_error:ratio_rate6h
+              expr: |
+                (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~"script_failure|job_canceled"}[6h])) or vector(0))
+                  / sum(increase(gitlab_runner_jobs_total[6h]))
+              labels:
+                slo: runner-jobs-success
+            - record: slo:sli_error:ratio_rate1d
+              expr: |
+                (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~"script_failure|job_canceled"}[1d])) or vector(0))
+                  / sum(increase(gitlab_runner_jobs_total[1d]))
+              labels:
+                slo: runner-jobs-success
+            - record: slo:sli_error:ratio_rate3d
+              expr: |
+                (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~"script_failure|job_canceled"}[3d])) or vector(0))
+                  / sum(increase(gitlab_runner_jobs_total[3d]))
+              labels:
+                slo: runner-jobs-success
+            - record: slo:sli_error:ratio_rate30d
+              expr: |
+                (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~"script_failure|job_canceled"}[30d])) or vector(0))
+                  / sum(increase(gitlab_runner_jobs_total[30d]))
+              labels:
+                slo: runner-jobs-success
+
+            # Share of jobs that waited more than 60 seconds before a runner took them.
+            - record: slo:sli_error:ratio_rate5m
+              expr: |
+                1 - sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le="60"}[5m]))
+                  / sum(increase(gitlab_runner_job_queue_duration_seconds_count[5m]))
+              labels:
+                slo: runner-jobs-start
+            - record: slo:sli_error:ratio_rate30m
+              expr: |
+                1 - sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le="60"}[30m]))
+                  / sum(increase(gitlab_runner_job_queue_duration_seconds_count[30m]))
+              labels:
+                slo: runner-jobs-start
+            - record: slo:sli_error:ratio_rate1h
+              expr: |
+                1 - sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le="60"}[1h]))
+                  / sum(increase(gitlab_runner_job_queue_duration_seconds_count[1h]))
+              labels:
+                slo: runner-jobs-start
+            - record: slo:sli_error:ratio_rate6h
+              expr: |
+                1 - sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le="60"}[6h]))
+                  / sum(increase(gitlab_runner_job_queue_duration_seconds_count[6h]))
+              labels:
+                slo: runner-jobs-start
+            - record: slo:sli_error:ratio_rate1d
+              expr: |
+                1 - sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le="60"}[1d]))
+                  / sum(increase(gitlab_runner_job_queue_duration_seconds_count[1d]))
+              labels:
+                slo: runner-jobs-start
+            - record: slo:sli_error:ratio_rate3d
+              expr: |
+                1 - sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le="60"}[3d]))
+                  / sum(increase(gitlab_runner_job_queue_duration_seconds_count[3d]))
+              labels:
+                slo: runner-jobs-start
+            - record: slo:sli_error:ratio_rate30d
+              expr: |
+                1 - sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le="60"}[30d]))
+                  / sum(increase(gitlab_runner_job_queue_duration_seconds_count[30d]))
+              labels:
+                slo: runner-jobs-start
+
+        # Alerts that fire when an SLO error budget goes too fast, see docs/slo.md.
+        - name: slo-runner-alerts
+          rules:
+            # The runner-reachable budget will be gone within days.
+            - alert: RunnerReachableBudgetBurnFast
+              expr: |
+                (
+                  slo:sli_error:ratio_rate1h{slo="runner-reachable"} > 0.144
+                  and
+                  slo:sli_error:ratio_rate5m{slo="runner-reachable"} > 0.144
+                )
+                or
+                (
+                  slo:sli_error:ratio_rate6h{slo="runner-reachable"} > 0.06
+                  and
+                  slo:sli_error:ratio_rate30m{slo="runner-reachable"} > 0.06
+                )
+              for: 2m
+              labels:
+                severity: critical
+                slo: runner-reachable
+              annotations:
+                summary: "SLO runner-reachable: the runner does not answer, the error budget burns too fast."
+            # The runner-reachable budget will be gone before the end of the 30 days.
+            - alert: RunnerReachableBudgetBurnSlow
+              expr: |
+                (
+                  slo:sli_error:ratio_rate3d{slo="runner-reachable"} > 0.01
+                  and
+                  slo:sli_error:ratio_rate6h{slo="runner-reachable"} > 0.01
+                )
+              for: 15m
+              labels:
+                severity: warning
+                slo: runner-reachable
+              annotations:
+                summary: "SLO runner-reachable: the runner does not answer, the error budget burns too fast."
+            # The runner-api budget will be gone within days.
+            - alert: RunnerApiBudgetBurnFast
+              expr: |
+                (
+                  slo:sli_error:ratio_rate1h{slo="runner-api"} > 0.144
+                  and
+                  slo:sli_error:ratio_rate5m{slo="runner-api"} > 0.144
+                )
+                or
+                (
+                  slo:sli_error:ratio_rate6h{slo="runner-api"} > 0.06
+                  and
+                  slo:sli_error:ratio_rate30m{slo="runner-api"} > 0.06
+                )
+              for: 2m
+              labels:
+                severity: critical
+                slo: runner-api
+              annotations:
+                summary: "SLO runner-api: the runner gets 5xx errors from GitLab, the error budget burns too fast."
+            # The runner-api budget will be gone before the end of the 30 days.
+            - alert: RunnerApiBudgetBurnSlow
+              expr: |
+                (
+                  slo:sli_error:ratio_rate3d{slo="runner-api"} > 0.01
+                  and
+                  slo:sli_error:ratio_rate6h{slo="runner-api"} > 0.01
+                )
+              for: 15m
+              labels:
+                severity: warning
+                slo: runner-api
+              annotations:
+                summary: "SLO runner-api: the runner gets 5xx errors from GitLab, the error budget burns too fast."
+            # The runner-jobs-success budget will be gone within days.
+            - alert: RunnerJobsFailBudgetBurnFast
+              expr: |
+                (
+                  slo:sli_error:ratio_rate6h{slo="runner-jobs-success"} > 0.06
+                  and
+                  slo:sli_error:ratio_rate1h{slo="runner-jobs-success"} > 0.06
+                )
+              for: 2m
+              labels:
+                severity: critical
+                slo: runner-jobs-success
+              annotations:
+                summary: "SLO runner-jobs-success: jobs fail because of the runner, the error budget burns too fast."
+            # The runner-jobs-success budget will be gone before the end of the 30 days.
+            - alert: RunnerJobsFailBudgetBurnSlow
+              expr: |
+                (
+                  slo:sli_error:ratio_rate3d{slo="runner-jobs-success"} > 0.01
+                  and
+                  slo:sli_error:ratio_rate6h{slo="runner-jobs-success"} > 0.01
+                )
+              for: 15m
+              labels:
+                severity: warning
+                slo: runner-jobs-success
+              annotations:
+                summary: "SLO runner-jobs-success: jobs fail because of the runner, the error budget burns too fast."
+            # The runner-jobs-start budget will be gone within days.
+            - alert: RunnerJobsSlowBudgetBurnFast
+              expr: |
+                (
+                  slo:sli_error:ratio_rate6h{slo="runner-jobs-start"} > 0.3
+                  and
+                  slo:sli_error:ratio_rate1h{slo="runner-jobs-start"} > 0.3
+                )
+              for: 2m
+              labels:
+                severity: critical
+                slo: runner-jobs-start
+              annotations:
+                summary: "SLO runner-jobs-start: jobs wait more than 60 seconds to start, the error budget burns too fast."
+            # The runner-jobs-start budget will be gone before the end of the 30 days.
+            - alert: RunnerJobsSlowBudgetBurnSlow
+              expr: |
+                (
+                  slo:sli_error:ratio_rate3d{slo="runner-jobs-start"} > 0.05
+                  and
+                  slo:sli_error:ratio_rate6h{slo="runner-jobs-start"} > 0.05
+                )
+              for: 15m
+              labels:
+                severity: warning
+                slo: runner-jobs-start
+              annotations:
+                summary: "SLO runner-jobs-start: jobs wait more than 60 seconds to start, the error budget burns too fast."

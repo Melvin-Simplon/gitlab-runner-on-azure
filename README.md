@@ -48,7 +48,7 @@ The platform has 3 jobs:
 | Component | Role | Namespace |
 |---|---|---|
 | GitLab Runner | Runs the CI jobs as pods, 2 at a time | `gitlab-runner` |
-| VictoriaMetrics cluster | Stores the metrics, 15 days (vminsert, vmselect, 2 vmstorage) | `monitoring` |
+| VictoriaMetrics cluster | Stores the metrics, 35 days (vminsert, vmselect, 2 vmstorage) | `monitoring` |
 | vmagent | Reads the metrics on each node and pushes them | `monitoring` |
 | node-exporter | CPU, memory, disk and network of each node | `monitoring` |
 | kube-state-metrics | State of the pods, deployments and nodes | `monitoring` |
@@ -150,18 +150,18 @@ To change something in the cluster, change the file, open a merge request and me
 | Observability | VictoriaMetrics cluster, vmagent, VictoriaLogs, VictoriaLogs collector |
 | Platform | ArgoCD, Traefik, cert-manager, Velero, GitLab Runner, SLO |
 
-**SLO**: the Runner SLO dashboard answers one question: do we have working runners, all the time? It follows 4 objectives over 14 days, because VictoriaMetrics keeps 15 days of metrics.
+**SLO**: the Runner SLO dashboard answers one question: do we have working runners, all the time? It follows 4 objectives over 30 days. The definitions, the alerts and the error budget policy are in [docs/slo.md](docs/slo.md).
 
 | Objective | Target | Measured with |
 |---|---|---|
-| Runner is reachable | 99 % | `up` of the runner, read by its sidecar |
+| Runner is reachable | 99 % | minutes where the runner answers, no data counts as down |
 | Runner talks to GitLab | 99 % | runner API calls without a 5xx code |
 | Jobs are not broken by the runner | 99 % | failed jobs, without failing scripts and canceled jobs |
 | Jobs start within 60 seconds | 95 % | time a job waits before a runner takes it |
 
 Each objective shows its SLI, the error budget left, and the burn rate. The dashboard comes from `k8s/grafana/dashboards/slo.json` on `main`, so Grafana needs a restart to load a new version.
 
-**Alerts**: 15 rules in `k8s/vmalert/rules.yaml`, on the nodes, the pods, the platform and the backups. They show in Grafana, menu **Alerting**. When one problem fires several alerts, Alertmanager hides the consequences and keeps the cause.
+**Alerts**: 23 alert rules in `k8s/vmalert/rules.yaml`, on the nodes, the pods, the platform, the backups and the runner SLOs, plus 29 recording rules that compute the SLOs. They show in Grafana, menu **Alerting**. When one problem fires several alerts, Alertmanager hides the consequences and keeps the cause.
 
 ## Backups
 
@@ -191,7 +191,7 @@ scripts/            the scripts behind each target
 terraform/          backup, infra and bootstrap stacks
 k8s/apps/           one ArgoCD app per component
 k8s/<component>/    the Helm values of each component
-docs/               project brief, presentation summary
+docs/               project brief, SLO definitions
 ```
 
 ## Contributing
@@ -207,7 +207,7 @@ Direct pushes and force pushes to `main` are blocked.
 ## Documentation
 
 - [Project brief](docs/consignes.md)
-- [Presentation summary](docs/presentation.md)
+- [Runner SLOs](docs/slo.md)
 - [ArgoCD](https://argo-cd.readthedocs.io/)
 - [AKS Workload Identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview)
 - [GitLab Runner Helm chart](https://docs.gitlab.com/runner/install/kubernetes/)
