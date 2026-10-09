@@ -36,7 +36,7 @@ It is **watched**, **backed up**, and **fully described as code**.
 - **Metrics**: a VictoriaMetrics cluster, kept **35 days**, collected by **vmagent** on each node.
 - The runner has its own **vmagent sidecar**, which sends its metrics.
 - **Logs**: VictoriaLogs, kept **7 days**, for every pod, `kube-system` included.
-- **Alerts**: **23 rules** (nodes, pods, platform, backups, runner SLOs), grouped by Alertmanager. They show in Grafana, menu **Alerting**, and with `make alerts`.
+- **Alerts**: **23 alert rules** (nodes, pods, platform, backups, runner SLOs), grouped by Alertmanager. They show in Grafana, menu **Alerting**, and with `make alerts`.
 - **Grafana** over **HTTPS**, behind Traefik, with a Let's Encrypt certificate managed by cert-manager.
 - Dashboards in **3 folders**: Kubernetes, Observability, Platform.
 - The Platform folder holds the **Gitlab Runner** and **Runner SLO** dashboards.
@@ -66,8 +66,8 @@ The **71 %** is a real result: a 9-job pipeline filled the 2 runner slots, and 6
 
 Following the Google SRE practice:
 
-- **Synthetic traffic**: the test-runner project runs a pipeline every 15 minutes during work hours, so the job SLOs have enough events.
-- **Recording rules**: vmalert computes each SLO over 7 windows, from 5 minutes to 30 days.
+- **Synthetic traffic**: the test-runner project runs a pipeline every hour during work hours, so the job SLOs have enough events.
+- **Recording rules**: vmalert computes each SLO over 8 windows, from 5 minutes to 30 days.
 - **Burn rate alerts**: 8 alerts, each one on a long and a short window.
 - **No data counts as down**: if the runner disappears while the cluster runs, the minute is bad.
 - **Error budget policy**: below 0, only reliability fixes are merged.
