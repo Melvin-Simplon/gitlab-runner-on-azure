@@ -148,7 +148,7 @@ To change something in the cluster, change the file, open a merge request and me
 |---|---|
 | Kubernetes | Global, Namespaces, Nodes, Pods, Node Exporter Full |
 | Observability | VictoriaMetrics cluster, vmagent, VictoriaLogs, VictoriaLogs collector |
-| Platform | ArgoCD, Traefik, cert-manager, Velero, SLO |
+| Platform | ArgoCD, Traefik, cert-manager, Velero, GitLab Runner, SLO |
 
 **SLO**: the SLO dashboard follows 4 objectives over 14 days, because VictoriaMetrics keeps 15 days of metrics.
 
