@@ -179,6 +179,11 @@ server:
                 1 - avg_over_time(slo:runner_up:max[1h])
               labels:
                 slo: runner-reachable
+            - record: slo:sli_error:ratio_rate2h
+              expr: |
+                1 - avg_over_time(slo:runner_up:max[2h])
+              labels:
+                slo: runner-reachable
             - record: slo:sli_error:ratio_rate6h
               expr: |
                 1 - avg_over_time(slo:runner_up:max[6h])
@@ -217,6 +222,12 @@ server:
               expr: |
                 (sum(increase(gitlab_runner_api_request_statuses_total{status=~"5.."}[1h])) or vector(0))
                   / sum(increase(gitlab_runner_api_request_statuses_total[1h]))
+              labels:
+                slo: runner-api
+            - record: slo:sli_error:ratio_rate2h
+              expr: |
+                (sum(increase(gitlab_runner_api_request_statuses_total{status=~"5.."}[2h])) or vector(0))
+                  / sum(increase(gitlab_runner_api_request_statuses_total[2h]))
               labels:
                 slo: runner-api
             - record: slo:sli_error:ratio_rate6h
@@ -263,6 +274,12 @@ server:
                   / sum(increase(gitlab_runner_jobs_total[1h]))
               labels:
                 slo: runner-jobs-success
+            - record: slo:sli_error:ratio_rate2h
+              expr: |
+                (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~"script_failure|job_canceled"}[2h])) or vector(0))
+                  / sum(increase(gitlab_runner_jobs_total[2h]))
+              labels:
+                slo: runner-jobs-success
             - record: slo:sli_error:ratio_rate6h
               expr: |
                 (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~"script_failure|job_canceled"}[6h])) or vector(0))
@@ -305,6 +322,12 @@ server:
               expr: |
                 1 - sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le="60"}[1h]))
                   / sum(increase(gitlab_runner_job_queue_duration_seconds_count[1h]))
+              labels:
+                slo: runner-jobs-start
+            - record: slo:sli_error:ratio_rate2h
+              expr: |
+                1 - sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le="60"}[2h]))
+                  / sum(increase(gitlab_runner_job_queue_duration_seconds_count[2h]))
               labels:
                 slo: runner-jobs-start
             - record: slo:sli_error:ratio_rate6h
@@ -407,9 +430,9 @@ server:
             - alert: RunnerJobsFailBudgetBurnFast
               expr: |
                 (
-                  slo:sli_error:ratio_rate6h{slo="runner-jobs-success"} > 0.06
+                  slo:sli_error:ratio_rate1d{slo="runner-jobs-success"} > 0.03
                   and
-                  slo:sli_error:ratio_rate1h{slo="runner-jobs-success"} > 0.06
+                  slo:sli_error:ratio_rate2h{slo="runner-jobs-success"} > 0.03
                 )
               for: 2m
               labels:
@@ -435,9 +458,9 @@ server:
             - alert: RunnerJobsSlowBudgetBurnFast
               expr: |
                 (
-                  slo:sli_error:ratio_rate6h{slo="runner-jobs-start"} > 0.3
+                  slo:sli_error:ratio_rate1d{slo="runner-jobs-start"} > 0.15
                   and
-                  slo:sli_error:ratio_rate1h{slo="runner-jobs-start"} > 0.3
+                  slo:sli_error:ratio_rate2h{slo="runner-jobs-start"} > 0.15
                 )
               for: 2m
               labels:
@@ -459,3 +482,4 @@ server:
                 slo: runner-jobs-start
               annotations:
                 summary: "SLO runner-jobs-start: jobs wait more than 60 seconds to start, the error budget burns too fast."
+

@@ -703,8 +703,8 @@
     {
       "id": 15,
       "type": "stat",
-      "title": "Burn rate over 6h",
-      "description": "How fast the budget goes. 1 uses it exactly in 30 days, 6 and above pages.",
+      "title": "Burn rate over 1d",
+      "description": "How fast the budget goes. 1 uses it exactly in 30 days, 3 and above pages.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -721,7 +721,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "slo:sli_error:ratio_rate6h{slo=\"runner-jobs-success\"} / 0.01",
+          "expr": "slo:sli_error:ratio_rate1d{slo=\"runner-jobs-success\"} / 0.01",
           "refId": "A",
           "instant": true,
           "range": false
@@ -757,7 +757,7 @@
               },
               {
                 "color": "red",
-                "value": 6
+                "value": 3
               }
             ]
           }
@@ -969,8 +969,8 @@
     {
       "id": 20,
       "type": "stat",
-      "title": "Burn rate over 6h",
-      "description": "How fast the budget goes. 1 uses it exactly in 30 days, 6 and above pages.",
+      "title": "Burn rate over 1d",
+      "description": "How fast the budget goes. 1 uses it exactly in 30 days, 3 and above pages.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -987,7 +987,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "slo:sli_error:ratio_rate6h{slo=\"runner-jobs-start\"} / 0.05",
+          "expr": "slo:sli_error:ratio_rate1d{slo=\"runner-jobs-start\"} / 0.05",
           "refId": "A",
           "instant": true,
           "range": false
@@ -1023,7 +1023,7 @@
               },
               {
                 "color": "red",
-                "value": 6
+                "value": 3
               }
             ]
           }
