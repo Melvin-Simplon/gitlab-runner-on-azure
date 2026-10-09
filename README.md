@@ -150,14 +150,14 @@ To change something in the cluster, change the file, open a merge request and me
 | Observability | VictoriaMetrics cluster, vmagent, VictoriaLogs, VictoriaLogs collector |
 | Platform | ArgoCD, Traefik, cert-manager, Velero, GitLab Runner, SLO |
 
-**SLO**: the SLO dashboard follows 4 objectives over 14 days, because VictoriaMetrics keeps 15 days of metrics.
+**SLO**: the Runner SLO dashboard answers one question: do we have working runners, all the time? It follows 4 objectives over 14 days, because VictoriaMetrics keeps 15 days of metrics.
 
 | Objective | Target | Measured with |
 |---|---|---|
-| Grafana answers without error | 99 % | Traefik requests without a 5xx code |
 | Runner is reachable | 99 % | `up` of the runner, read by its sidecar |
 | Runner talks to GitLab | 99 % | runner API calls without a 5xx code |
-| Velero backups succeed | 95 % | successful backups out of all attempts |
+| Jobs are not broken by the runner | 99 % | failed jobs, without failing scripts and canceled jobs |
+| Jobs start within 60 seconds | 95 % | time a job waits before a runner takes it |
 
 Each objective shows its SLI, the error budget left, and the burn rate. The dashboard comes from `k8s/grafana/dashboards/slo.json` on `main`, so Grafana needs a restart to load a new version.
 
