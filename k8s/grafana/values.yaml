@@ -173,3 +173,6 @@ dashboards:
     velero:
       gnetId: 16829
       revision: 5
+    # Our own SLO dashboard, read from main when Grafana starts.
+    slo:
+      url: https://gitlab.com/WhiteMuush/gitlab-runner-on-azure/-/raw/main/k8s/grafana/dashboards/slo.json

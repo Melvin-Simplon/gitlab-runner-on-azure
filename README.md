@@ -11,7 +11,6 @@
 <br/>
 <br/>
 <a href="https://github.com/WhiteMuush"><img src="https://github.com/WhiteMuush.png" width="56" alt="WhiteMuush" /></a>
-<a href="https://github.com/ororck"><img src="https://github.com/ororck.png" width="56" alt="ororck" /></a>
 </div>
 
 <br/>
@@ -149,7 +148,18 @@ To change something in the cluster, change the file, open a merge request and me
 |---|---|
 | Kubernetes | Global, Namespaces, Nodes, Pods, Node Exporter Full |
 | Observability | VictoriaMetrics cluster, vmagent, VictoriaLogs, VictoriaLogs collector |
-| Platform | ArgoCD, Traefik, cert-manager, Velero |
+| Platform | ArgoCD, Traefik, cert-manager, Velero, SLO |
+
+**SLO**: the SLO dashboard follows 4 objectives over 14 days, because VictoriaMetrics keeps 15 days of metrics.
+
+| Objective | Target | Measured with |
+|---|---|---|
+| Grafana answers without error | 99 % | Traefik requests without a 5xx code |
+| Runner is reachable | 99 % | `up` of the runner, read by its sidecar |
+| Runner talks to GitLab | 99 % | runner API calls without a 5xx code |
+| Velero backups succeed | 95 % | successful backups out of all attempts |
+
+Each objective shows its SLI, the error budget left, and the burn rate. The dashboard comes from `k8s/grafana/dashboards/slo.json` on `main`, so Grafana needs a restart to load a new version.
 
 **Alerts**: 15 rules in `k8s/vmalert/rules.yaml`, on the nodes, the pods, the platform and the backups. They show in Grafana, menu **Alerting**. When one problem fires several alerts, Alertmanager hides the consequences and keeps the cause.
 
@@ -208,6 +218,7 @@ Direct pushes and force pushes to `main` are blocked.
 - [VictoriaLogs collector (vlagent)](https://docs.victoriametrics.com/victorialogs/vlagent/)
 - [VictoriaLogs Grafana plugin](https://docs.victoriametrics.com/victorialogs/integrations/grafana/)
 - [Grafana](https://grafana.com/docs/grafana/latest/)
+- [Alerting on SLOs (Google SRE workbook)](https://sre.google/workbook/alerting-on-slos/)
 - [Traefik](https://doc.traefik.io/traefik/)
 - [cert-manager](https://cert-manager.io/docs/)
 - [node-exporter](https://github.com/prometheus/node_exporter)
