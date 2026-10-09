@@ -221,8 +221,8 @@
     {
       "id": 5,
       "type": "timeseries",
-      "title": "SLI per 1h",
-      "description": "The dashed line is the objective.",
+      "title": "SLI over the last 1h, rolling",
+      "description": "Each point is the SLI of the 1h before it. The dashed line is the objective.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -241,8 +241,7 @@
           },
           "expr": "sum(sum_over_time(up{job=\"gitlab-runner\"}[1h])) / sum(count_over_time(up{job=\"gitlab-runner\"}[1h]))",
           "refId": "A",
-          "legendFormat": "SLI",
-          "interval": "1h"
+          "legendFormat": "SLI"
         }
       ],
       "options": {
@@ -488,8 +487,8 @@
     {
       "id": 10,
       "type": "timeseries",
-      "title": "SLI per 1h",
-      "description": "The dashed line is the objective.",
+      "title": "SLI over the last 1h, rolling",
+      "description": "Each point is the SLI of the 1h before it. The dashed line is the objective.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -508,8 +507,7 @@
           },
           "expr": "1 - (sum(increase(gitlab_runner_api_request_statuses_total{status=~\"5..\"}[1h])) or vector(0)) / sum(increase(gitlab_runner_api_request_statuses_total[1h]))",
           "refId": "A",
-          "legendFormat": "SLI",
-          "interval": "1h"
+          "legendFormat": "SLI"
         }
       ],
       "options": {
@@ -755,8 +753,8 @@
     {
       "id": 15,
       "type": "timeseries",
-      "title": "SLI per 1d",
-      "description": "The dashed line is the objective.",
+      "title": "SLI over the last 1d, rolling",
+      "description": "Each point is the SLI of the 1d before it. The dashed line is the objective.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -775,8 +773,7 @@
           },
           "expr": "1 - (sum(increase(gitlab_runner_failed_jobs_total{failure_reason!~\"script_failure|job_canceled\"}[1d])) or vector(0)) / sum(increase(gitlab_runner_jobs_total[1d]))",
           "refId": "A",
-          "legendFormat": "SLI",
-          "interval": "1d"
+          "legendFormat": "SLI"
         }
       ],
       "options": {
@@ -1022,8 +1019,8 @@
     {
       "id": 20,
       "type": "timeseries",
-      "title": "SLI per 1d",
-      "description": "The dashed line is the objective.",
+      "title": "SLI over the last 1d, rolling",
+      "description": "Each point is the SLI of the 1d before it. The dashed line is the objective.",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
@@ -1042,8 +1039,7 @@
           },
           "expr": "sum(increase(gitlab_runner_job_queue_duration_seconds_bucket{le=\"60\"}[1d])) / sum(increase(gitlab_runner_job_queue_duration_seconds_count[1d]))",
           "refId": "A",
-          "legendFormat": "SLI",
-          "interval": "1d"
+          "legendFormat": "SLI"
         }
       ],
       "options": {
